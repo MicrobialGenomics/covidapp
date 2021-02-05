@@ -21,10 +21,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build new docker image
-        run: docker build --no-cache . -t francesccatala/testdocker:latest
+        run: docker build --no-cache . -t microbialgenomics/testdocker:latest
 
       - name: Push Docker image to DockerHub (dev)
         run: |
           echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker tag francesccatala/testdocker:latest francesccatala/testdocker:dev
-          docker push francesccatala/testdocker:dev
+          docker tag microbialgenomics/testdocker:latest microbialgenomics/testdocker:dev
+          docker push microbialgenomics/testdocker:dev
