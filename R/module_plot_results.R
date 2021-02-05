@@ -14,7 +14,15 @@ plot_results_module_ui <- function(id) {
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
 
-            shiny::h4("Please click to update the data")
+            ## Upload metadata
+            shiny::fileInput(
+                inputId = shiny::NS(id, "target_load"),
+                label = shiny::h5("Choose excel template"),
+                accept = c(".csv"),
+                placeholder = "No file selected",
+                buttonLabel = "Browse...",
+                width = 400
+            )
         ),
 
         # main
@@ -62,30 +70,35 @@ plot_results_module_ui <- function(id) {
 plot_results_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        #shiny::observe({
-        NCCladeSpace <- c("20A", "20E", "19A", "20B", "20D", "501Y")
-        xDim <- 100
-        seqEffortDF <- tibble::tibble(
-            collection_date = sample(seq(
-                as.Date('2021/01/01'), as.Date('2021/03/31'), by = "day"
-            ), xDim, replace = T),
-            sample_id = stringi::stri_rand_strings(xDim, 10),
-            library_id = stringi::stri_rand_strings(xDim, 10),
-            QPass = wakefield::answer(xDim),
-            RawReads = runif(xDim, 10000, 140000),
-            PercCov = runif(xDim),
-            DepthOfCoverage = runif(xDim, 0, 1000),
-            NCClade = sample(NCCladeSpace, xDim, replace = T),
-        ) %>%
-            dplyr::mutate(
-                PassReads = RawReads - runif(nrow(.), 1000, 4000),
-                WeekNumber = strftime(collection_date, format = "%V")
-            )
-        #})
+        df <- shiny::reactive({
+            inFile <- input$target_load
+            if (is.null(inFile)) {
+                NCCladeSpace <- c("20A", "20E", "19A", "20B", "20D", "501Y")
+                xDim <- 100
+                df <- tibble::tibble(
+                    collection_date = sample(seq(
+                        as.Date('2021/01/01'), as.Date('2021/03/31'), by = "day"
+                    ), xDim, replace = T),
+                    sample_id = stringi::stri_rand_strings(xDim, 10),
+                    library_id = stringi::stri_rand_strings(xDim, 10),
+                    QPass = wakefield::answer(xDim),
+                    RawReads = runif(xDim, 10000, 140000),
+                    PercCov = runif(xDim),
+                    DepthOfCoverage = runif(xDim, 0, 1000),
+                    NCClade = sample(NCCladeSpace, xDim, replace = T),
+                ) %>%
+                    dplyr::mutate(
+                        PassReads = RawReads - runif(nrow(.), 1000, 4000),
+                        WeekNumber = strftime(collection_date, format = "%V")
+                    )
+            } else {
+                df <- readr::read_delim(inFile$datapath, delim = ";")
+            }
+        })
 
         output$plot_1 <- shiny::renderPlot({
-            if (!is.null(seqEffortDF)) {
-                seqEffortDF %>%
+            if (!is.null(df())) {
+                df() %>%
                     ggplot(aes(x = WeekNumber)) +
                     geom_bar(stat = "count") +
                     theme_light()
@@ -93,8 +106,8 @@ plot_results_module_server <- function(id) {
         })
 
         output$plot_2 <- shiny::renderPlot({
-            if (!is.null(seqEffortDF)) {
-                seqEffortDF %>%
+            if (!is.null(df())) {
+                df() %>%
                     ggplot(aes(NCClade, fill = NCClade)) +
                     geom_bar() +
                     coord_polar() +
@@ -103,8 +116,8 @@ plot_results_module_server <- function(id) {
         })
 
         output$plot_3 <- shiny::renderPlot({
-            if (!is.null(seqEffortDF)) {
-                seqEffortDF %>%
+            if (!is.null(df())) {
+                df() %>%
                     ggplot(aes(WeekNumber, fill = NCClade)) +
                     geom_bar(position = "fill", stat = "count") +
                     theme_light()
@@ -112,8 +125,8 @@ plot_results_module_server <- function(id) {
         })
 
         output$plot_4 <- shiny::renderPlot({
-            if (!is.null(seqEffortDF)) {
-                seqEffortDF %>%
+            if (!is.null(df())) {
+                df() %>%
                     ggplot(aes(as.numeric(WeekNumber), fill = NCClade)) +
                     geom_area(position = "fill", stat = "count") +
                     theme_light()
