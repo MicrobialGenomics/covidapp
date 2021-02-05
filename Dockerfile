@@ -1,5 +1,8 @@
 FROM rocker/shiny-verse
 
+# Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
+RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
+
 # Update the machine
 RUN apt update && apt install -y libcurl4-openssl-dev mysql-server git
 
