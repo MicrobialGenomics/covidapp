@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  multi:
+  docker_push:
     runs-on: ubuntu-latest
     steps:
       -
