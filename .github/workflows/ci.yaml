@@ -26,5 +26,5 @@ jobs:
       - name: Push Docker image to DockerHub (dev)
         run: |
           echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker tag francesccatala/testdocker:latest francesccatala/testdocker/viralrecon:dev
+          docker tag francesccatala/testdocker:latest francesccatala/testdocker:dev
           docker push francesccatala/testdocker:dev
