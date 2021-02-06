@@ -1,14 +1,10 @@
-FROM rocker/shiny-verse
+FROM francesccatala/shiny-verse:4.0.1
 
-# Update the machine
-RUN apt update && apt install -y mysql-server git
+# Copy covidseq_dev and set permission
+ADD ./covidseq_dev /srv/shiny-server/covidseq_dev
+ADD ./covidseq /srv/shiny-server/covidseq
+ADD ./covidapp /srv/shiny-server/covidapp
 
-# Download main and dev branches from covidseq
-RUN git clone --single-branch --branch main https://github.com/MicrobialGenomics/covidseq /srv/shiny-server/covidseq && \
-    git clone --single-branch --branch dev  https://github.com/MicrobialGenomics/covidseq /srv/shiny-server/covidseq_dev
-
-# Copy covidapp and set permission
-ADD ./ /srv/shiny-server/covidapp
 RUN chmod -R +r /srv/shiny-server
 
 # Install covidapp and covidseq
