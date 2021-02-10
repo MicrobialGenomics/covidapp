@@ -99,9 +99,11 @@ plot_results_module_server <- function(id) {
         output$plot_1 <- shiny::renderPlot({
             if (!is.null(df())) {
                 df() %>%
-                    ggplot(aes(x = WeekNumber)) +
+                    ggplot(aes(x = WeekNumber,fill=NCClade)) +
                     geom_bar(stat = "count") +
-                    theme_light()
+
+                    theme_light()+
+                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
             }
         })
 
@@ -111,6 +113,7 @@ plot_results_module_server <- function(id) {
                     ggplot(aes(NCClade, fill = NCClade)) +
                     geom_bar() +
                     coord_polar() +
+                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
                     theme_light()
             }
         })
