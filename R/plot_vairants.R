@@ -1,10 +1,8 @@
 #' Pre-processing variants data
 #'
-#' @param remove_others Boolean indicating if Other variants category must be removed
-#'
 #' @return tibble
 #' @export
-prepro_variants <- function(remove_others = FALSE) {
+prepro_variants <- function() {
 
     # Pre-processing data
     dat <- jsonlite::fromJSON("data/EUClusters_data.json")[["countries"]][["Spain"]] %>%
@@ -23,13 +21,6 @@ prepro_variants <- function(remove_others = FALSE) {
                          counts = counts,
                          sum = sum(counts),
                          variant = variant)
-
-    ## Removing others variants
-    if (isTRUE(remove_others)) {
-        dat <- dat %>% dplyr::filter(!variant == "Others")
-    }
-
-    dat
 }
 
 #' Plot variants
@@ -38,10 +29,20 @@ prepro_variants <- function(remove_others = FALSE) {
 #' @param var variable to plot. Options: "freq" and "counts"
 #' @param pal Used palette
 #' @param pal_dir Palete direction order. Options: 1 and -1
+#' @param variants List with variants to plot
 #'
 #' @return plotly object
 #' @export
-plot_vairants <- function(df, var = "freq", pal = "Spectral", pal_dir = -1) {
+plot_vairants <- function(df,
+                          var = "freq",
+                          pal = "Spectral",
+                          pal_dir = -1,
+                          variants = NULL) {
+
+    # filter variants
+    if (!is.null(variants)) {
+        df <- df %>% dplyr::filter(variant %in% variants)
+    }
 
     # define order by median
     ord <- df %>%
@@ -78,7 +79,7 @@ plot_vairants <- function(df, var = "freq", pal = "Spectral", pal_dir = -1) {
         plotly::config(displaylogo = FALSE)
 }
 
-prepro_variants(remove_others = F) %>%
+prepro_variants(remove_others = FALSE) %>%
     plot_vairants()
 
 
