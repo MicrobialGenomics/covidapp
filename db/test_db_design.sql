@@ -62,6 +62,17 @@ create table `Mutation_comments`(
     FOREIGN KEY (`mutation_idx`) REFERENCES `Mutations` (`mutation_idx`) ON UPDATE CASCADE
 )
 
+create table Variants(
+    `variant_idx` mediumint NOT NULL AUTO INCREMENT PRIMARY KEY,
+    `NC_variant_idx` mediumint NOT NULL,
+    `PG_variant_idx` mediumint NOT NULL
+    FOREIGN KEY (`NC_variant_idx`) REFERENCES `NC_variants` (`NC_variant_idx`) ON UPDATE CASCADE,
+    FOREIGN KEY (`PG_variant_idx`) REFERENCES `PG_variants` (`PG_variant_idx`) ON UPDATE CASCADE
+)
 create table `Variant_comments`(
-
+    `variant_comment_idx` mediumint NOT NULL AUTO INCREMENT PRIMARY KEY,
+    `variant_idx` mediumint NOT NULL,
+    `variant_comment_type` varchar(10) NOT NULL,
+    `variant_comment_text` text NOT NULL,
+    FOREIGN KEY (`variant_idx`) REFERENCES `Variants` (`variant_idx`) ON UPDATE CASCADE
 )
