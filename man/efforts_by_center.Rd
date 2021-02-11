@@ -7,7 +7,9 @@
 efforts_by_center(df, pos = "stack")
 }
 \arguments{
-\item{pos}{}
+\item{df}{df}
+
+\item{pos}{y transformation}
 }
 \value{
 plotly
