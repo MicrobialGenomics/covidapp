@@ -6,7 +6,7 @@
 cat_map_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::div(class = "outer",
-               shiny::tags$head(shiny::includeCSS("styles.css")),
+               shiny::tags$head(shiny::includeCSS("www/style/map_style.css")),
                leaflet::leafletOutput(outputId = ns("mymap"), width = "100%",height = "100%"),
                shiny::absolutePanel(
                    id = "controls", class = "panel panel-default",
