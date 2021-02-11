@@ -109,8 +109,8 @@ plot_vairants <- function(df,
 
 #' Plots sequencing efforts by center
 #'
-#' @param df
-#' @param pos
+#' @param df df
+#' @param pos y transformation
 #'
 #' @return plotly
 #' @export
