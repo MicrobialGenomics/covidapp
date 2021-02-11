@@ -5,49 +5,53 @@
 #' @export
 cat_map_module_ui <- function(id) {
     ns <- shiny::NS(id)
-    shiny::div(class = "outer",
-               shiny::tags$head(shiny::includeCSS("www/style/map_style.css")),
-               leaflet::leafletOutput(outputId = ns("mymap"), width = "100%",height = "100%"),
-               shiny::absolutePanel(
-                   id = "controls", class = "panel panel-default",
-                   top = 75, left = 55, width = 250, fixed = TRUE,
-                   draggable = TRUE, height = "auto",
-                   shiny::span(shiny::tags$i(shiny::h6("Reported cases are ...")), style="color:#045a8d"),
-                   shiny::h3(shiny::textOutput(outputId = ns("reactive_case_count")), align = "right"),
-                   shiny::h4(shiny::textOutput(outputId = ns("reactive_death_count")), align = "right"),
-                   shiny::h6(shiny::textOutput(outputId = ns("clean_date_reactive")), align = "right"),
-                   shiny::h6(shiny::textOutput(outputId = ns("reactive_country_count")), align = "right"),
-                   shiny::plotOutput(outputId = ns("epi_curve"), height = "130px", width = "100%"),
-                   shiny::plotOutput(outputId = ns("cumulative_plot"), height = "130px", width = "100%"),
+    shiny::div(
+        class = "outer",
+        shiny::tags$head(shiny::includeCSS("www/style/map_style.css")),
 
-                   shinyWidgets::sliderTextInput(
-                       inputId = ns("plot_date"),
-                       label = shiny::h5("Select mapping date"),
-                       choices = format(sample(seq(as.Date('2020/04/01'), as.Date('2021/01/01'), by="day"), 12), "%d %b %y"),
-                       grid = FALSE,
-                       animate = shiny::animationOptions(interval = 3000, loop = FALSE)
-                   ),
+        ## Map
+        leaflet::leafletOutput(outputId = ns("mymap"), width = "100%",height = "100%"),
 
-                   shiny::absolutePanel(
-                       id = "logo",
-                       class = "card",
-                       bottom = 20,
-                       right = 60,
-                       width = 80,
-                       fixed = TRUE,
-                       draggable = FALSE,
-                       height = "auto",
-                       shiny::tags$a(
-                           href = 'https://www.irsicaixa.es',
-                           shiny::tags$img(
-                               src =  "logo_irsicaixa.png",
-                               height = '50',
-                               width = '120'
-                           )
-                       )
-                   )
-               )
+        ## Absolute panel
+        shiny::absolutePanel(
+            id = "controls", class = "panel panel-default",
+            top = 75, left = 55, width = 250, fixed = TRUE,
+            draggable = TRUE, height = "auto",
+            shiny::span(shiny::tags$i(shiny::h6("Reported cases are ...")), style="color:#045a8d"),
+            shiny::h3(shiny::textOutput(outputId = ns("reactive_case_count")), align = "right"),
+            shiny::h4(shiny::textOutput(outputId = ns("reactive_death_count")), align = "right"),
+            shiny::h6(shiny::textOutput(outputId = ns("clean_date_reactive")), align = "right"),
+            shiny::h6(shiny::textOutput(outputId = ns("reactive_country_count")), align = "right"),
+            shiny::plotOutput(outputId = ns("epi_curve"), height = "130px", width = "100%"),
+            shiny::plotOutput(outputId = ns("cumulative_plot"), height = "130px", width = "100%"),
 
+            shinyWidgets::sliderTextInput(
+                inputId = ns("plot_date"),
+                label = shiny::h5("Select mapping date"),
+                choices = format(sample(seq(as.Date('2020/04/01'), as.Date('2021/01/01'), by="day"), 12), "%d %b %y"),
+                grid = FALSE,
+                animate = shiny::animationOptions(interval = 3000, loop = FALSE)
+            ),
+
+            shiny::absolutePanel(
+                id = "logo",
+                class = "card",
+                bottom = 20,
+                right = 60,
+                width = 80,
+                fixed = TRUE,
+                draggable = FALSE,
+                height = "auto",
+                shiny::tags$a(
+                    href = 'https://www.irsicaixa.es',
+                    shiny::tags$img(
+                        src =  "logo_irsicaixa.png",
+                        height = '50',
+                        width = '120'
+                    )
+                )
+            )
+        )
     )
 }
 
@@ -58,14 +62,49 @@ cat_map_module_ui <- function(id) {
 #' @export
 cat_map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
-        catalunya_map$values <- sample(100:5000, length(catalunya_map$comarca))
-        bins = c(100, 500, 1000, 2500, 5000, Inf)
-        cv_pal <- leaflet::colorBin("Oranges", domain = catalunya_map$values, bins = bins)
 
-        plot_map <- leaflet::leaflet(catalunya_map) %>%
+
+        map <- rgdal::readOGR("data/georef-spain-comunidad-autonoma.geojson")
+
+
+        df <- readr::read_rds("data/MergedData_spain.rds") %>%
+            dplyr::mutate(
+                acom_name = dplyr::case_when(
+                    division == "Andalusia" ~ "Andalucía",
+                    division == "Aragon" ~ "Aragón",
+                    division == "Asturias" ~ "Principado de Asturias",
+                    division == "Balear Islands" ~ "Illes Balears",
+                    division == "Basque Country" ~ "País Vasco",
+                    division == "Canary Islands" ~ "Canarias",
+                    division == "Castilla la Mancha" ~ "Castilla-La Mancha",
+                    division == "Castilla y Leon" ~ "Castilla y León",
+                    division == "Catalunya" ~ "Cataluña",
+                    division == "Ceuta" ~ "Ciudad Autónoma de Ceuta",
+                    division == "Melilla" ~ "Ciudad Autónoma de Melilla",
+                    division == "Madrid" ~ "Comunidad de Madrid",
+                    division == "Navarra" ~ "Comunidad Foral de Navarra",
+                    division == "Murcia" ~ "Región de Murcia",
+                    TRUE ~ division
+                ),
+                acom_name = factor(acom_name, c(unique(acom_name), "Territorio no asociado a ninguna autonomía"))
+            )
+
+        map$cases <- df %>%
+            dplyr::count(acom_name, .drop = FALSE) %>%
+            dplyr::left_join(
+                x = tibble::tibble(acom_name = map$acom_name),
+                y = .,
+                by = "acom_name"
+            ) %>%
+            dplyr::pull(n)
+
+        bins = c(seq(0, 2000, by = 250))
+        cv_pal <- leaflet::colorBin("Oranges", domain = map$cases, bins = bins)
+
+        plot_map <- leaflet::leaflet(map) %>%
             leaflet::addTiles() %>%
             leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) %>%
-            leaflet::setView(lng = 2, lat = 41.75, zoom = 8) %>%
+            leaflet::setView(lng = -4, lat = 40, zoom = 6) %>%
             leaflet::addLayersControl(
                 position = "topright",
                 overlayGroups = c("COVID (new)", "COVID (cumulative)"),
@@ -75,13 +114,13 @@ cat_map_module_server <- function(id) {
                 stroke = FALSE,
                 smoothFactor = 0.3,
                 fillOpacity = 0.6,
-                fillColor = ~ cv_pal(values)
+                fillColor = ~ cv_pal(cases)
             ) %>%
             leaflet::addLegend(
-                position = "topright",
+                position = "bottomleft",
                 pal = cv_pal,
-                values = ~ values,
-                title = "<small>Deaths per million</small>"
+                values = ~ cases,
+                title = "<small>Sequenced cases</small>"
             )
 
         output$mymap <- leaflet::renderLeaflet({

@@ -30,7 +30,13 @@ Imports:
     usethis,
     rlang (>= 0.1.2),
     magrittr,
-    shinyWidgets
+    shinyWidgets,
+    pals,
+    forcats,
+    plotly,
+    readr,
+    scales,
+    RColorBrewer
 Suggests: 
     roxygen2
 Depends: 
