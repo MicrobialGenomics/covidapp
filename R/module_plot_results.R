@@ -28,7 +28,7 @@ plot_results_module_ui <- function(id) {
                     shiny::fixedRow(
                         shiny::column(
                             width = 5,
-                            shiny::h4(glue::glue("SARS-CoV-2 Variants by Week")),
+                            shiny::h5(glue::glue("SARS-CoV-2 Variants by Week")),
                             shiny::h6(glue::glue("{stringr::str_to_title(months(Sys.Date()))} {strftime(Sys.Date(), '%d')}th"))
                         ),
                         shiny::column(width = 5),
@@ -84,7 +84,7 @@ plot_results_module_ui <- function(id) {
                     shiny::fixedRow(
                         shiny::column(
                             width = 5,
-                            shiny::h5(glue::glue("SARS-CoV-2 Variants by Week")),
+                            shiny::h5(glue::glue("Sequencing efforts by center")),
                             shiny::h6(glue::glue("{stringr::str_to_title(months(Sys.Date()))} {strftime(Sys.Date(), '%d')}th"))
                         ),
                         shiny::column(width = 5),
