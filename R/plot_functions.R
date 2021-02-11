@@ -107,6 +107,7 @@ plot_vairants <- function(df,
         plotly::config(displaylogo = FALSE)
 }
 
+
 #' Plots sequencing efforts by center
 #'
 #' @param df df
