@@ -12,50 +12,105 @@ plot_results_module_ui <- function(id) {
 
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
-            width = 3,
+            width = 2,
 
             ## Upload metadata
-            shiny::fileInput(
-                inputId = shiny::NS(id, "target_load"),
-                label = shiny::h5("Choose excel template"),
-                accept = c(".csv"),
-                placeholder = "No file selected",
-                buttonLabel = "Browse...",
-                width = 400
-            )
+
         ),
 
         # main
         mainPanel = shiny::mainPanel(
-            width = 9,
-            shiny::fixedRow(
-                shiny::column(
-                    width = 7,
-                    shiny::h4("Genomic Sequencing Efforts of SARS-CoV-2"),
-                    shiny::h6("On date, $date, a total of XXX Samples have been processed for genome sequencing. These efforts are distributed along different weeks, starting 2021."),
-                    shiny::plotOutput(shiny::NS(id, "plot_1"), height = 300)
-                ),
-                shiny::column(
-                    width = 5,
-                    shiny::h4("Longitudinal evolution of variants"),
-                    shiny::h6("Globally, variant composition of the studied sample population consists of"),
-                    shiny::plotOutput(shiny::NS(id, "plot_2"), height = 300)
-                ),
-            ),
-            shiny::br(),
-            shiny::br(),
-            shiny::fixedRow(
+            width = 10,
+            shiny::fluidRow(
+                ## Plot 1
                 shiny::column(
                     width = 6,
-                    shiny::h4("Longitudinal evolution of variants"),
-                    shiny::h6("Longitudinally, variant composition shows the following trends"),
-                    shiny::plotOutput(shiny::NS(id, "plot_3"), height = 300)
+                    shiny::fixedRow(
+                        shiny::column(
+                            width = 5,
+                            shiny::h4(glue::glue("SARS-CoV-2 Variants by Week")),
+                            shiny::h6(glue::glue("{stringr::str_to_title(months(Sys.Date()))} {strftime(Sys.Date(), '%d')}th"))
+                        ),
+                        shiny::column(width = 5),
+                        shiny::column(
+                            width = 1,
+                            shiny::br(),
+                            shinyWidgets::dropdown(
+                                shiny::h5("Pick y-axis transfomation:"),
+                                shinyWidgets::switchInput(
+                                    inputId = ns("stack_p1"),
+                                    label = "type",
+                                    onLabel = "stack",
+                                    offLabel = "fill",
+                                    size = "small",
+                                    value = TRUE
+                                ),
+                                shiny::h5("Pick plot type:"),
+                                shinyWidgets::switchInput(
+                                    inputId = ns("bar_p1"),
+                                    label = "geom_",
+                                    onLabel = "bar",
+                                    offLabel = "density",
+                                    size = "small",
+                                    value = TRUE
+                                ),
+                                shiny::h5("Pick palette:"),
+                                shinyWidgets::sliderTextInput(
+                                    inputId = ns("pal_p1"),
+                                    label = NULL,
+                                    choices = c(
+                                        "mg",
+                                        RColorBrewer::brewer.pal.info %>%
+                                            dplyr::filter(category == "qual") %>%
+                                            rownames
+                                    ),
+                                    selected = "mg"
+                                ),
+                                style = "stretch", icon = icon("gear"),
+                                status = "primary", width = "300px",
+                                animate = shinyWidgets::animateOptions(
+                                    enter = shinyWidgets::animations$fading_entrances$fadeInLeft,
+                                    exit = shinyWidgets::animations$fading_exits$fadeOutRight
+                                )
+                            )
+                        )
+                    ),
+                    plotly::plotlyOutput(shiny::NS(id, "plot_1"), height = 400)
                 ),
+
+                ## Plot 2
                 shiny::column(
                     width = 6,
-                    shiny::h4("Longitudinal evolution of variants"),
-                    shiny::h6("Longitudinally, variant composition shows the following trends"),
-                    shiny::plotOutput(shiny::NS(id, "plot_4"), height = 300)
+                    shiny::fixedRow(
+                        shiny::column(
+                            width = 5,
+                            shiny::h5(glue::glue("SARS-CoV-2 Variants by Week")),
+                            shiny::h6(glue::glue("{stringr::str_to_title(months(Sys.Date()))} {strftime(Sys.Date(), '%d')}th"))
+                        ),
+                        shiny::column(width = 5),
+                        shiny::column(
+                            width = 1,
+                            shiny::br(),
+                            shinyWidgets::dropdown(
+                                shiny::h5("Pick y-axis transfomation:"),
+                                shinyWidgets::switchInput(
+                                    inputId = ns("stack_p2"),
+                                    label = "type",
+                                    onLabel = "stack",
+                                    offLabel = "fill",
+                                    size = "small",
+                                    value = TRUE
+                                ),
+                                style = "stretch", icon = icon("gear"),
+                                status = "primary", width = "300px",right = T,
+                                animate = shinyWidgets::animateOptions(
+                                    enter = shinyWidgets::animations$fading_entrances$fadeInLeft,
+                                    exit = shinyWidgets::animations$fading_exits$fadeOutRight
+                                )
+                            )
+                        )
+                    ),
+                    plotly::plotlyOutput(shiny::NS(id, "plot_2"), height = 348)
                 )
             )
         )
@@ -70,72 +125,34 @@ plot_results_module_ui <- function(id) {
 plot_results_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        df <- shiny::reactive({
-            inFile <- input$target_load
-            if (is.null(inFile)) {
-                NCCladeSpace <- c("20A", "20E", "19A", "20B", "20D", "501Y")
-                xDim <- 100
-                df <- tibble::tibble(
-                    collection_date = sample(seq(
-                        as.Date('2021/01/01'), as.Date('2021/03/31'), by = "day"
-                    ), xDim, replace = T),
-                    sample_id = stringi::stri_rand_strings(xDim, 10),
-                    library_id = stringi::stri_rand_strings(xDim, 10),
-                    QPass = wakefield::answer(xDim),
-                    RawReads = runif(xDim, 10000, 140000),
-                    PercCov = runif(xDim),
-                    DepthOfCoverage = runif(xDim, 0, 1000),
-                    NCClade = sample(NCCladeSpace, xDim, replace = T),
-                ) %>%
-                    dplyr::mutate(
-                        PassReads = RawReads - runif(nrow(.), 1000, 4000),
-                        WeekNumber = strftime(collection_date, format = "%V")
-                    )
-            } else {
-                df <- readr::read_delim(inFile$datapath, delim = ";")
-            }
+        df <- readr::read_rds("data/MergedData_spain.rds")
+
+        output$title_1 <- shiny::renderText({
+            shiny::req(input$stack_p1)
+            dplyr::if_else(isTRUE(input$stack_p1), "Counts", "Frequency")
         })
 
-        output$plot_1 <- shiny::renderPlot({
-            if (!is.null(df())) {
-                df() %>%
-                    ggplot(aes(x = WeekNumber,fill=NCClade)) +
-                    geom_bar(stat = "count") +
 
-                    theme_light()+
-                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-            }
+        ## Plot 1
+        output$plot_1 <- plotly::renderPlotly({
+            shiny::req(exists("df"))
+            df %>%
+                prepro_variants() %>%
+                plot_vairants(
+                    type = ifelse(isTRUE(input$bar_p1), "bar", "density"),
+                    var = ifelse(isTRUE(input$stack_p1), "counts", "freq"),
+                    pal_dir = -1,
+                    pal = input$pal_p1
+                )
         })
 
-        output$plot_2 <- shiny::renderPlot({
-            if (!is.null(df())) {
-                df() %>%
-                    ggplot(aes(NCClade, fill = NCClade)) +
-                    geom_bar() +
-                    coord_polar() +
-                    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
-                    theme_light()
-            }
+        ## Plot 1
+        output$plot_2 <- plotly::renderPlotly({
+            shiny::req(exists("df"))
+            df %>% efforts_by_center(
+                pos = ifelse(isTRUE(input$stack_p2), "stack", "fill")
+            )
         })
-
-        output$plot_3 <- shiny::renderPlot({
-            if (!is.null(df())) {
-                df() %>%
-                    ggplot(aes(WeekNumber, fill = NCClade)) +
-                    geom_bar(position = "fill", stat = "count") +
-                    theme_light()
-            }
-        })
-
-        output$plot_4 <- shiny::renderPlot({
-            if (!is.null(df())) {
-                df() %>%
-                    ggplot(aes(as.numeric(WeekNumber), fill = NCClade)) +
-                    geom_area(position = "fill", stat = "count") +
-                    theme_light()
-            }
-        })
-
     })
 }
 

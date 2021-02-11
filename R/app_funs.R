@@ -3,33 +3,32 @@
 #' @export
 ui <- function() {
     shiny::shinyUI(
-        shiny::fluidPage(
-            shinyjs::useShinyjs(),
-            theme = shinythemes::shinytheme("slate"),
-            shiny::navbarPage(
-                title = shiny::div(shiny::div(
-                    id = "img-id",
-                    shiny::img(
-                        src = "logo_irsicaixa.png",
-                        height = '30',
-                        width = '90'
-                    )
-                ), "covidApp"),
-                id = "tabs",
-
-                # TAB1: Results
-                shiny::tabPanel(
-                    title = "Results",
-                    value = "tab_1",
-                    plot_results_module_ui("tab1")
-                ),
-
-                # TAB2: Cat map
-                shiny::tabPanel(
-                    title = "Cat map",
-                    value = "tab_2",
-                    cat_map_module_ui("tab2")
+        shiny::navbarPage(
+            title = shiny::div(shiny::div(
+                id = "img-id",
+                shiny::img(
+                    src = "images/logo_irsicaixa.png",
+                    height = '30',
+                    width = '90'
                 )
+            ), "covidApp"),
+            theme = shinythemes::shinytheme("flatly"),
+            #footer = footer(),
+            fluid = TRUE,
+            collapsible = TRUE,
+
+            # TAB1: Results
+            shiny::tabPanel(
+                title = "Results",
+                value = "tab_1",
+                plot_results_module_ui("tab1")
+            ),
+
+            # TAB2: Cat map
+            shiny::tabPanel(
+                title = "Cat map",
+                value = "tab_2",
+                cat_map_module_ui("tab2")
             )
         )
     )
