@@ -13,8 +13,7 @@ per_variant_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 2,
-            shiny::h4("Variants"),
-            shiny::uiOutput(outputId = ns("option_clades"))
+            shiny::uiOutput(outputId = ns("option_clades")),
         ),
 
         # main
@@ -36,20 +35,21 @@ per_variant_module_server <- function(id) {
         df <- readr::read_rds("data/MergedData_spain.rds")
         clades <- df %>% dplyr::pull(NCClade) %>% unique() %>% sort()
 
+        output$option_clades <- shiny::renderUI({
+            shinyWidgets::pickerInput(
+                inputId = session$ns("variant"),
+                label = shiny::h5("Variants:"),
+                choices = df$NCClade %>% forcats::fct_infreq() %>% levels(),
+                selected = df$NCClade %>% forcats::fct_infreq() %>% levels(),
+                multiple = TRUE
+            )
+        })
+
         all_plots <- clades %>%
             purrr::set_names() %>%
             purrr::map(function(var) {
                 df %>% plot_variant_by_com(var)
             })
-
-        output$option_clades <- shiny::renderUI({
-            shinyWidgets::awesomeCheckboxGroup(
-                inputId = session$ns("variant"),
-                label = "",
-                choices = df$NCClade %>% forcats::fct_infreq() %>% levels(),
-                selected = df$NCClade %>% forcats::fct_infreq() %>% levels()
-            )
-        })
 
         output$plots <- shiny::renderUI({
             lapply(input$variant, function(pp) {
