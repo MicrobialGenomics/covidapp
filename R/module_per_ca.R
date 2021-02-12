@@ -13,8 +13,44 @@ per_ca_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 2,
-            shiny::h4("Variants"),
-            shiny::uiOutput(outputId = ns("option_clades"))
+            shiny::uiOutput(outputId = ns("option_ca")),
+
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("stack_p1"),
+                label = shiny::h5("Pick y-axis transfomation:"),
+                choices = c("stack" = "counts", "fill" = "freq"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "counts",
+                justified = TRUE
+            ),
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("bar_p1"),
+                label = shiny::h5("Pick plot type:"),
+                choices = c("bar", "density"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "bar",
+                justified = TRUE
+            ),
+            shiny::h5("Pick palette:"),
+            shinyWidgets::sliderTextInput(
+                inputId = ns("pal_p1"),
+                label = NULL,
+                selected = "mg",
+                choices = c(
+                    "mg",
+                    RColorBrewer::brewer.pal.info %>%
+                        dplyr::filter(category == "qual") %>%
+                        rownames()
+                )
+            )
         ),
 
         # main
@@ -34,34 +70,47 @@ per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         df <- readr::read_rds("data/MergedData_spain.rds")
-        clades <- df %>% dplyr::pull(NCClade) %>% unique() %>% sort()
+        com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("all", .)
 
-        all_plots <- clades %>%
-            purrr::set_names() %>%
-            purrr::map(function(var) {
-                df %>% plot_variant_by_com(var)
-            })
-
-        output$option_clades <- shiny::renderUI({
-            shinyWidgets::awesomeCheckboxGroup(
-                inputId = session$ns("variant"),
-                label = "",
-                choices = df$NCClade %>% unique() %>% sort(),
-                selected = df$NCClade %>% unique() %>% sort()
+        output$option_ca <- shiny::renderUI({
+            shinyWidgets::pickerInput(
+                inputId = session$ns("option_ca"),
+                label = shiny::h5("Autonumus Community:"),
+                choices = c("all", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                selected = c("all", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                multiple = TRUE
             )
         })
 
+        all_plots <- shiny::reactive({
+            shiny::req(input$bar_p1)
+            shiny::req(input$stack_p1)
+
+            all_plots <- com_aut %>%
+                purrr::set_names() %>%
+                purrr::map(function(com) {
+                    df %>% prepro_variants(ca = com) %>%
+                        plot_vairants(
+                            type = input$bar_p1,
+                            var = input$stack_p1,
+                            pal_dir = -1,
+                            pal = input$pal_p1
+                        )
+                })
+        })
+
         output$plots <- shiny::renderUI({
-            lapply(input$variant, function(pp) {
+            lapply(input$option_ca, function(pp) {
                 shiny::tagList(
                     shiny::column(
                         width = 6,
-                        shiny::h4(stringr::str_c("Variant: ", pp)),
-                        plotly::renderPlotly({ all_plots[[pp]] })
+                        shiny::h4(stringr::str_c("C.A: ", pp)),
+                        plotly::renderPlotly({ all_plots()[[pp]] })
                     )
                 )
             })
         })
+
     })
 }
 
