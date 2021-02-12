@@ -45,7 +45,7 @@ cat_map_module_ui <- function(id) {
                 shiny::tags$a(
                     href = 'https://www.irsicaixa.es',
                     shiny::tags$img(
-                        src =  "logo_irsicaixa.png",
+                        src =  "images/logo_irsicaixa.png",
                         height = '50',
                         width = '120'
                     )
@@ -63,31 +63,13 @@ cat_map_module_ui <- function(id) {
 cat_map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-
-        map <- rgdal::readOGR("data/georef-spain-comunidad-autonoma.geojson")
-
+        map <- ca_spain_gj
 
         df <- readr::read_rds("data/MergedData_spain.rds") %>%
-            dplyr::mutate(
-                acom_name = dplyr::case_when(
-                    division == "Andalusia" ~ "Andalucía",
-                    division == "Aragon" ~ "Aragón",
-                    division == "Asturias" ~ "Principado de Asturias",
-                    division == "Balear Islands" ~ "Illes Balears",
-                    division == "Basque Country" ~ "País Vasco",
-                    division == "Canary Islands" ~ "Canarias",
-                    division == "Castilla la Mancha" ~ "Castilla-La Mancha",
-                    division == "Castilla y Leon" ~ "Castilla y León",
-                    division == "Catalunya" ~ "Cataluña",
-                    division == "Ceuta" ~ "Ciudad Autónoma de Ceuta",
-                    division == "Melilla" ~ "Ciudad Autónoma de Melilla",
-                    division == "Madrid" ~ "Comunidad de Madrid",
-                    division == "Navarra" ~ "Comunidad Foral de Navarra",
-                    division == "Murcia" ~ "Región de Murcia",
-                    TRUE ~ division
-                ),
-                acom_name = factor(acom_name, c(unique(acom_name), "Territorio no asociado a ninguna autonomía"))
-            )
+            dplyr::mutate(acom_name = factor(
+                acom_name,
+                c(unique(acom_name), "Territorio no asociado a ninguna autonomía")
+            ))
 
         map$cases <- df %>%
             dplyr::count(acom_name, .drop = FALSE) %>%
@@ -97,6 +79,12 @@ cat_map_module_server <- function(id) {
                 by = "acom_name"
             ) %>%
             dplyr::pull(n)
+
+
+        p <- map$acom_name %>%
+            purrr::set_names() %>%
+            purrr::map(function(x) { plot_pie(x, df) })
+
 
         bins = c(seq(0, 2000, by = 250))
         cv_pal <- leaflet::colorBin("Oranges", domain = map$cases, bins = bins)
@@ -121,11 +109,38 @@ cat_map_module_server <- function(id) {
                 pal = cv_pal,
                 values = ~ cases,
                 title = "<small>Sequenced cases</small>"
+            ) %>%
+            leaflet::addPolygons(
+                stroke = FALSE,
+                fillOpacity = 0,
+                fillColor = "transparent",
+                popup = leafpop::popupGraph(p)
             )
 
         output$mymap <- leaflet::renderLeaflet({
             plot_map
         })
+
+
     })
 }
+
+
+plot_pie <- function(com, df) {
+    p <- df %>%
+        dplyr::filter(acom_name == com) %>%
+        dplyr::mutate(NCClade = forcats::fct_infreq(NCClade)) %>%
+        ggplot(aes(NCClade, fill = NCClade)) +
+        geom_bar(stat = "count") +
+        #coord_polar() +
+        theme_bw() +
+        labs(x = "", title = com) +
+        theme(axis.text.x = element_blank())
+
+   # p <- plotly::ggplotly(p)
+}
+
+
+
+
 
