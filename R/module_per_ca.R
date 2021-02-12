@@ -50,6 +50,18 @@ per_ca_module_ui <- function(id) {
                         dplyr::filter(category == "qual") %>%
                         rownames()
                 )
+            ),
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("var_annot"),
+                label = shiny::h5("Pick Variant Annotation:"),
+                choices = c("NCClade" = "NCClade", "Pangolin" = "pangolin_lineage"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "NCClade",
+                justified = TRUE
             )
         ),
 
@@ -70,14 +82,14 @@ per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         df <- readr::read_rds("data/MergedData_spain.rds")
-        com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("all", .)
+        com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
 
         output$option_ca <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("option_ca"),
-                label = shiny::h5("Autonumus Community:"),
-                choices = c("all", df$acom_name %>% forcats::fct_infreq() %>% levels()),
-                selected = c("all", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                label = shiny::h5("Autonomous Community:"),
+                choices = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                selected = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
                 multiple = TRUE
             )
         })
@@ -85,11 +97,13 @@ per_ca_module_server <- function(id) {
         all_plots <- shiny::reactive({
             shiny::req(input$bar_p1)
             shiny::req(input$stack_p1)
+            shiny::req(input$var_annot)
 
             all_plots <- com_aut %>%
                 purrr::set_names() %>%
                 purrr::map(function(com) {
-                    df %>% prepro_variants(ca = com) %>%
+                    df %>%
+                        prepro_variants(ca = com, var_anno = input$var_annot) %>%
                         plot_vairants(
                             type = input$bar_p1,
                             var = input$stack_p1,
@@ -104,8 +118,10 @@ per_ca_module_server <- function(id) {
                 shiny::tagList(
                     shiny::column(
                         width = 6,
-                        shiny::h4(stringr::str_c("C.A: ", pp)),
-                        plotly::renderPlotly({ all_plots()[[pp]] })
+                        shiny::h4(stringr::str_c(pp), align = "center"),
+                        shiny::hr(),
+                        plotly::renderPlotly({ all_plots()[[pp]] }),
+                        shiny::br()
                     )
                 )
             })
