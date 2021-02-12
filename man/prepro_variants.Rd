@@ -4,7 +4,14 @@
 \alias{prepro_variants}
 \title{Pre-processing variants data}
 \usage{
-prepro_variants(df)
+prepro_variants(df, ca = "all", var_anno = "NCClade")
+}
+\arguments{
+\item{df}{tibble}
+
+\item{ca}{all or autonomous community}
+
+\item{var_anno}{variant annotation column. ex. "NCClade" or "pangolin_lineage"}
 }
 \value{
 tibble
