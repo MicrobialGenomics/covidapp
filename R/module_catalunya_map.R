@@ -10,7 +10,7 @@ cat_map_module_ui <- function(id) {
         shiny::tags$head(shiny::includeCSS("www/style/map_style.css")),
 
         ## Map
-        leaflet::leafletOutput(outputId = ns("mymap"), width = "100%",height = "100%"),
+        leaflet::leafletOutput(outputId = ns("mymap"), width = "100%", height = "100%"),
 
         ## Absolute panel
         shiny::absolutePanel(

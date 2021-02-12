@@ -2,12 +2,17 @@
 #'
 #' @return tibble
 #' @export
-prepro_variants <- function(df) {
+prepro_variants <- function(df, ca = "all") {
+
+    df <- df %>%
+        dplyr::mutate(NCClade = forcats::fct_infreq(NCClade) %>% forcats::fct_rev())
+
+    if (ca != "all") { df <- df %>% dplyr::filter(acom_name == ca) }
+
     # Pre-processing data
     df %>%
         tidyr::drop_na(week_num) %>%
-        dplyr::mutate(NCClade = factor(NCClade, levels = unique(NCClade))) %>%
-        dplyr::group_by(week_num) %>%
+        dplyr::group_by(week_num, .drop = FALSE) %>%
         dplyr::select(week_num, NCClade) %>%
         dplyr::count(NCClade, .drop = FALSE) %>%
         dplyr::summarise(freq = n / sum(n),
@@ -41,15 +46,15 @@ plot_vairants <- function(df,
     }
 
     # define order by median
-    ord <- df %>%
-        dplyr::group_by(NCClade) %>%
-        dplyr::summarise(mean = mean(!!sym(var))) %>%
-        dplyr::pull(mean) %>%
-        sort()
+    # ord <- df %>%
+    #     dplyr::group_by(NCClade) %>%
+    #     dplyr::summarise(mean = mean(!!sym(var))) %>%
+    #     dplyr::arrange(mean) %>%
+    #     dplyr::pull(NCClade)
 
     # Text label for plotly
     df <- df %>%
-        dplyr::mutate(NCClade = forcats::fct_reorder(NCClade, rev(ord)),
+        dplyr::mutate(#NCClade = factor(NCClade, levels = ord),
                       text = stringr::str_c(
                           "NCClade:", NCClade,
                           "<br>frequency:", freq,
@@ -99,7 +104,7 @@ plot_vairants <- function(df,
 
     plotly::ggplotly(pp, tooltip = "text") %>%
         plotly::layout(
-            hovermode = 'compare',
+            hovermode = 'closest',
             legend = list(orientation = 'h', y = -0.2)
             #title = title,
             #margin = list(l = 0, r = 0, b = 0, t = 50, pad = 4)
