@@ -29,6 +29,13 @@ ui <- function() {
                 title = "Cat map",
                 value = "tab_2",
                 cat_map_module_ui("tab2")
+            ),
+
+            # TAB2: Per Autonomous Com
+            shiny::tabPanel(
+                title = "Per Autonomous Com",
+                value = "tab_3",
+                per_ca_module_ui("tab3")
             )
         )
     )
@@ -45,6 +52,9 @@ server <- function(){
 
         ## Module tab 2
         cat_map_module_server("tab2")
+
+        ## Module tab 3
+        per_ca_module_server("tab3")
     }
 }
 
