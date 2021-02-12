@@ -109,7 +109,24 @@ mergedData <- gisaidcore %>%
         pct_cov = length - (qc.missingData.totalMissing / length) * 100,
         qpass = if_else(pct_cov > 80, "Yes", "No"),
         week_num = strftime(collection_date, format = "%y-%V"),
-        week_num = if_else(week_num == "21-53", "20-53", week_num)
+        week_num = if_else(week_num == "21-53", "20-53", week_num),
+        acom_name = dplyr::case_when(
+            division == "Andalusia" ~ "Andalucía",
+            division == "Aragon" ~ "Aragón",
+            division == "Asturias" ~ "Principado de Asturias",
+            division == "Balear Islands" ~ "Illes Balears",
+            division == "Basque Country" ~ "País Vasco",
+            division == "Canary Islands" ~ "Canarias",
+            division == "Castilla la Mancha" ~ "Castilla-La Mancha",
+            division == "Castilla y Leon" ~ "Castilla y León",
+            division == "Catalunya" ~ "Cataluña",
+            division == "Ceuta" ~ "Ciudad Autónoma de Ceuta",
+            division == "Melilla" ~ "Ciudad Autónoma de Melilla",
+            division == "Madrid" ~ "Comunidad de Madrid",
+            division == "Navarra" ~ "Comunidad Foral de Navarra",
+            division == "Murcia" ~ "Región de Murcia",
+            TRUE ~ division
+        )
     )
 
 readr::write_rds(
