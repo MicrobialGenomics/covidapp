@@ -55,6 +55,7 @@ cat_map_module_ui <- function(id) {
     )
 }
 
+
 #' Title
 #'
 #' @param id identification
