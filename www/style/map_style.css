@@ -41,7 +41,7 @@ h1, h2, h3, h4 { font-weight: 400; }
   background-color: transparent;
   cursor: move;
   /* Fade out while not hovering */
-  opacity: 0.25;
+  opacity: 0.5;
   zoom: 0.9;
   transition: opacity 500ms 1s;
 }
