@@ -171,6 +171,60 @@ efforts_by_center <- function(df, pos = "stack") {
 }
 
 
+#' Plot variant by C.A.
+#'
+#' @param df tibble
+#' @param variant NCClade to plot
+#'
+#' @return plotly
+#' @export
+plot_variant_by_com <- function(df, variant) {
+    # Preparing data
+    prepro <- df %>%
+        tidyr::drop_na(week_num) %>%
+        dplyr::mutate(
+            NCClade = factor(NCClade, levels = unique(NCClade)),
+            acom_name = factor(acom_name, levels = unique(acom_name))
+        ) %>%
+        dplyr::group_by(week_num, acom_name) %>%
+        dplyr::count(NCClade, .drop = FALSE) %>%
+        dplyr::summarise(
+            freq = n / sum(n),
+            pct = freq * 100,
+            counts = n,
+            sum = sum(counts),
+            NCClade = NCClade,
+            acom_name = acom_name
+        ) %>%
+        tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
+        dplyr::filter(NCClade == variant) %>%
+        dplyr::mutate(text = stringr::str_c("C.A:", acom_name, "<br>Frequency:", pct, sep = " "))
+
+    # Plot data
+    pp <- prepro %>%
+        dplyr::rename("C.A" = "acom_name") %>%
+        ggplot(aes(week_num, freq, colour = C.A, group = C.A, text = text)) +
+        stat_smooth(se = F, method = "loess", formula = "y ~ x", size = 0.8,
+                    alpha = 0.5, geom = "line") +
+        scale_colour_manual(values = pals::polychrome() %>% as.vector(), name = "") +
+        scale_y_continuous(labels = scales::percent,
+                           limits = c(0, 1.05), breaks = seq(0, 1, by = 0.25)) +
+        labs(x = "", y = "Frequency") +
+        theme_minimal(base_rect_size = 0) +
+        theme(legend.position = "none",
+              axis.text.x = element_text(
+                  angle = 90,
+                  hjust = 1,
+                  vjust = 0.5
+              ))
+
+    # Convert to plotly
+    plotly::ggplotly(pp, tooltip = "colour") %>%
+        plotly::layout(hovermode = 'closest') %>%
+        plotly::config(displaylogo = FALSE)
+}
+
+
 # ### Header Looks like
 # ##collection_date;sample_id;library_id;QPass;RawReads;PercCov;DepthOfCoverage;NCClade;PassReads;WeekNumber
 # require(dplyr)
