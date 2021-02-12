@@ -1,25 +1,37 @@
 #' Pre-processing variants data
 #'
+#' @param df tibble
+#' @param ca all or autonomous community
+#' @param var_anno variant annotation column. ex. "NCClade" or "pangolin_lineage"
+#'
 #' @return tibble
 #' @export
-prepro_variants <- function(df, ca = "all") {
+prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
+
+    if (var_anno == "pangolin_lineage") {
+        to_retain <- df %>%
+            dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
+            dplyr::pull(clade) %>% levels() %>% .[1:12]
+
+        df <- df %>% dplyr::filter(!!sym(var_anno) %in% to_retain)
+    }
 
     df <- df %>%
-        dplyr::mutate(NCClade = forcats::fct_infreq(NCClade) %>% forcats::fct_rev())
+        dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno)) %>% forcats::fct_rev())
 
-    if (ca != "all") { df <- df %>% dplyr::filter(acom_name == ca) }
+    if (ca != "Spain") { df <- df %>% dplyr::filter(acom_name == ca) }
 
     # Pre-processing data
     df %>%
         tidyr::drop_na(week_num) %>%
         dplyr::group_by(week_num, .drop = FALSE) %>%
-        dplyr::select(week_num, NCClade) %>%
-        dplyr::count(NCClade, .drop = FALSE) %>%
+        dplyr::select(week_num, clade) %>%
+        dplyr::count(clade, .drop = FALSE) %>%
         dplyr::summarise(freq = n / sum(n),
                          pct = freq * 100,
                          counts = n,
                          sum = sum(counts),
-                         NCClade = NCClade)
+                         clade = clade)
 }
 
 #' Plot variants
@@ -29,7 +41,7 @@ prepro_variants <- function(df, ca = "all") {
 #' @param var variable to plot. Options: "freq" and "counts"
 #' @param pal Used palette
 #' @param pal_dir Palete direction order. Options: 1 and -1
-#' @param NCClade List with NCClade to plot
+#' @param clade List with clade to plot
 #'
 #' @return plotly object
 #' @export
@@ -38,25 +50,25 @@ plot_vairants <- function(df,
                           var = "freq",
                           pal = "mg",
                           pal_dir = -1,
-                          NCClade = NULL) {
+                          clade = NULL) {
 
-    # filter NCClade
-    if (!is.null(NCClade)) {
-        df <- df %>% dplyr::filter(NCClade %in% NCClade)
+    # filter clade
+    if (!is.null(clade)) {
+        df <- df %>% dplyr::filter(clade %in% clade)
     }
 
     # define order by median
     # ord <- df %>%
-    #     dplyr::group_by(NCClade) %>%
+    #     dplyr::group_by(clade) %>%
     #     dplyr::summarise(mean = mean(!!sym(var))) %>%
     #     dplyr::arrange(mean) %>%
-    #     dplyr::pull(NCClade)
+    #     dplyr::pull(clade)
 
     # Text label for plotly
     df <- df %>%
-        dplyr::mutate(#NCClade = factor(NCClade, levels = ord),
+        dplyr::mutate(#clade = factor(clade, levels = ord),
                       text = stringr::str_c(
-                          "NCClade:", NCClade,
+                          "clade:", clade,
                           "<br>frequency:", freq,
                           "<br>percentage:", pct,
                           "<br>count:", counts,
@@ -67,11 +79,11 @@ plot_vairants <- function(df,
     # Define plot class
     if (type == "density") {
         pp <- df %>%
-            ggplot(aes(week_num, !!sym(var), fill = NCClade, group = NCClade, text = text)) +
+            ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
             geom_density(stat = "identity", position = "stack", alpha = 0.5, colour = NA)
     } else if (type == "bar") {
         pp <- df %>%
-            ggplot(aes(week_num, !!sym(var), fill = NCClade, group = NCClade, text = text)) +
+            ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
             geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA)
     }
 
@@ -92,7 +104,7 @@ plot_vairants <- function(df,
         pp <- pp + scale_fill_brewer(palette = pal, direction = pal_dir, name = "")
     } else {
         pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
-                 "#D55E00", "#CC79A7","darkred","darkgreen","steelblue")
+                 "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#FF7F00")
         pp <- pp + scale_fill_manual(values = pal)
     }
 
