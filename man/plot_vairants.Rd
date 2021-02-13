@@ -10,7 +10,7 @@ plot_vairants(
   var = "freq",
   pal = "mg",
   pal_dir = -1,
-  NCClade = NULL
+  clade = NULL
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ plot_vairants(
 
 \item{pal_dir}{Palete direction order. Options: 1 and -1}
 
-\item{NCClade}{List with NCClade to plot}
+\item{clade}{List with clade to plot}
 }
 \value{
 plotly object
