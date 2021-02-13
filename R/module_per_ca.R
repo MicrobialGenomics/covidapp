@@ -13,8 +13,56 @@ per_ca_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 2,
-            shiny::h4("Variants"),
-            shiny::uiOutput(outputId = ns("option_clades"))
+            shiny::uiOutput(outputId = ns("option_ca")),
+
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("stack_p1"),
+                label = shiny::h5("Pick y-axis transfomation:"),
+                choices = c("stack" = "counts", "fill" = "freq"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "counts",
+                justified = TRUE
+            ),
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("bar_p1"),
+                label = shiny::h5("Pick plot type:"),
+                choices = c("bar", "density"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "bar",
+                justified = TRUE
+            ),
+            shiny::h5("Pick palette:"),
+            shinyWidgets::sliderTextInput(
+                inputId = ns("pal_p1"),
+                label = NULL,
+                selected = "mg",
+                choices = c(
+                    "mg",
+                    RColorBrewer::brewer.pal.info %>%
+                        dplyr::filter(category == "qual") %>%
+                        rownames()
+                )
+            ),
+            shinyWidgets::radioGroupButtons(
+                inputId = ns("var_annot"),
+                label = shiny::h5("Pick Variant Annotation:"),
+                choices = c("NCClade" = "NCClade", "Pangolin" = "pangolin_lineage"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "NCClade",
+                justified = TRUE
+            )
         ),
 
         # main
@@ -34,34 +82,51 @@ per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         df <- readr::read_rds("data/MergedData_spain.rds")
-        clades <- df %>% dplyr::pull(NCClade) %>% unique() %>% sort()
+        com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
 
-        all_plots <- clades %>%
-            purrr::set_names() %>%
-            purrr::map(function(var) {
-                df %>% plot_variant_by_com(var)
-            })
-
-        output$option_clades <- shiny::renderUI({
-            shinyWidgets::awesomeCheckboxGroup(
-                inputId = session$ns("variant"),
-                label = "",
-                choices = df$NCClade %>% unique() %>% sort(),
-                selected = df$NCClade %>% unique() %>% sort()
+        output$option_ca <- shiny::renderUI({
+            shinyWidgets::pickerInput(
+                inputId = session$ns("option_ca"),
+                label = shiny::h5("Autonomous Community:"),
+                choices = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                selected = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                multiple = TRUE
             )
         })
 
+        all_plots <- shiny::reactive({
+            shiny::req(input$bar_p1)
+            shiny::req(input$stack_p1)
+            shiny::req(input$var_annot)
+
+            all_plots <- com_aut %>%
+                purrr::set_names() %>%
+                purrr::map(function(com) {
+                    df %>%
+                        prepro_variants(ca = com, var_anno = input$var_annot) %>%
+                        plot_vairants(
+                            type = input$bar_p1,
+                            var = input$stack_p1,
+                            pal_dir = -1,
+                            pal = input$pal_p1
+                        )
+                })
+        })
+
         output$plots <- shiny::renderUI({
-            lapply(input$variant, function(pp) {
+            lapply(input$option_ca, function(pp) {
                 shiny::tagList(
                     shiny::column(
                         width = 6,
-                        shiny::h4(stringr::str_c("Variant: ", pp)),
-                        plotly::renderPlotly({ all_plots[[pp]] })
+                        shiny::h4(stringr::str_c(pp), align = "center"),
+                        shiny::hr(),
+                        plotly::renderPlotly({ all_plots()[[pp]] }),
+                        shiny::br()
                     )
                 )
             })
         })
+
     })
 }
 
