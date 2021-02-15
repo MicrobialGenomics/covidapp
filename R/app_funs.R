@@ -43,6 +43,13 @@ ui <- function() {
                 title = "Per Variant",
                 value = "tab_4",
                 per_variant_module_ui("tab4")
+            ),
+
+            # TAB5: Data download
+            shiny::tabPanel(
+                title = "Data",
+                value = "tab_5",
+                data_dw_module_ui("tab5")
             )
         )
     )
@@ -63,8 +70,11 @@ server <- function(){
         ## Module tab 3
         per_ca_module_server("tab3")
 
-        ## Module tab 3
+        ## Module tab 4
         per_variant_module_server("tab4")
+
+        ## Module tab 5
+        data_dw_module_server("tab5")
     }
 }
 

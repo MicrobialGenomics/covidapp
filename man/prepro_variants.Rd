@@ -4,7 +4,7 @@
 \alias{prepro_variants}
 \title{Pre-processing variants data}
 \usage{
-prepro_variants(df, ca = "all", var_anno = "NCClade")
+prepro_variants(df, ca = "Spain", var_anno = "NCClade")
 }
 \arguments{
 \item{df}{tibble}
