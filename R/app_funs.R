@@ -26,14 +26,14 @@ ui <- function() {
 
             # TAB2: Cat map
             shiny::tabPanel(
-                title = "Cat map",
+                title = "Sequencing efforts",
                 value = "tab_2",
                 cat_map_module_ui("tab2")
             ),
 
             # TAB3: Per Autonomous Com
             shiny::tabPanel(
-                title = "Per Autonomous Com",
+                title = "Per C.A.",
                 value = "tab_3",
                 per_ca_module_ui("tab3")
             ),

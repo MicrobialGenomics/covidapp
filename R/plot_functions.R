@@ -242,6 +242,34 @@ plot_variant_by_com <- function(df, variant) {
 }
 
 
+efforts_all <- function(df) {
+    ## Edit center names
+    prepro <- df %>%
+        dplyr::count(date) %>%
+        dplyr::arrange(date) %>%
+        dplyr::mutate(cum = cumsum(n))
+
+    ## Plotting by position type
+    by_date <- prepro %>%
+        ggplot(aes(x = date, y = n)) +
+        geom_line(colour = "#E16462FF") +
+        geom_point(colour = "#E16462FF") +
+        theme_minimal(base_rect_size = 0) +
+        theme(legend.position = "none") +
+        labs(x = "Date", y = "New sequences (weekly)")
+
+    accomulate <- prepro %>%
+        ggplot(aes(x = date, y = cum)) +
+        geom_line(colour = "#E16462FF") +
+        geom_point(colour = "#E16462FF") +
+        theme_minimal(base_rect_size = 0) +
+        theme(legend.position = "none") +
+        labs(x = "Date", y = "Comulative sequences")
+
+    list(pp_counts = by_date, pp_cumsum = accomulate)
+}
+
+
 # ### Header Looks like
 # ##collection_date;sample_id;library_id;QPass;RawReads;PercCov;DepthOfCoverage;NCClade;PassReads;WeekNumber
 # require(dplyr)
