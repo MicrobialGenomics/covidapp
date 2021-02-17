@@ -24,6 +24,12 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
     # Pre-processing data
     df %>%
         tidyr::drop_na(week_num) %>%
+        dplyr::mutate(
+            date = format(collection_date, "%y-%W"),
+            week = as.numeric(stringr::str_remove(date, ".*-")),
+            year = as.numeric(stringr::str_remove(date, "-.*")),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+        ) %>%
         dplyr::group_by(week_num, .drop = FALSE) %>%
         dplyr::select(week_num, clade) %>%
         dplyr::count(clade, .drop = FALSE) %>%
@@ -93,7 +99,6 @@ plot_vairants <- function(df,
      # Common plot
     pp <- pp +
         theme_minimal(base_rect_size = 0) +
-        theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
         labs(x = "", y = t_2)
 
     if (var == "freq") {
