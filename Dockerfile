@@ -1,4 +1,4 @@
-FROM francesccatala/shiny-verse:4.0.1
+FROM francesccatala/shiny-verse:4.0.3
 
 # Copy covidseq_dev and set permission
 ADD ./covidseq_dev /srv/shiny-server/covidseq_dev
