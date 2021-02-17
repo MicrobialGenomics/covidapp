@@ -37,7 +37,10 @@ Imports:
     readr,
     scales,
     RColorBrewer,
-    leafpop
+    leafpop,
+    DT,
+    lubridate,
+    purrr
 Suggests: 
     roxygen2
 Depends: 
