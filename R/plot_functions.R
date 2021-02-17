@@ -197,6 +197,7 @@ efforts_by_center <- function(df, pos = "stack") {
 #'
 #' @param df tibble
 #' @param variant NCClade to plot
+#' @param var_col column name of plotting variant
 #'
 #' @return plotly
 #' @export
