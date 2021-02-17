@@ -4,7 +4,7 @@
 \alias{plot_variant_by_com}
 \title{Plot variant by C.A.}
 \usage{
-plot_variant_by_com(df, variant)
+plot_variant_by_com(df, variant, var_col)
 }
 \arguments{
 \item{df}{tibble}
