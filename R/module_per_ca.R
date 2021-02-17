@@ -12,7 +12,8 @@ per_ca_module_ui <- function(id) {
 
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
-            width = 2,
+            width = 3,
+            style = "position:fixed;width: inherit;",
             shiny::uiOutput(outputId = ns("option_ca")),
 
             shinyWidgets::radioGroupButtons(
@@ -67,7 +68,7 @@ per_ca_module_ui <- function(id) {
 
         # main
         mainPanel = shiny::mainPanel(
-            width = 10,
+            width = 9,
             shiny::uiOutput(outputId = ns("plots"))
         )
     )
