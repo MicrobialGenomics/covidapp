@@ -200,26 +200,31 @@ efforts_by_center <- function(df, pos = "stack") {
 #'
 #' @return plotly
 #' @export
-plot_variant_by_com <- function(df, variant) {
+plot_variant_by_com <- function(df, variant, var_col) {
     # Preparing data
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
+        dplyr::mutate(varcol = !!sym(var_col)) %>%
         dplyr::mutate(
-            NCClade = factor(NCClade, levels = unique(NCClade)),
-            acom_name = factor(acom_name, levels = unique(acom_name))
+            varcol = factor(varcol, levels = unique(varcol)),
+            acom_name = factor(acom_name, levels = unique(acom_name)),
+            date = format(collection_date, "%y-%W"),
+            week = as.numeric(stringr::str_remove(date, ".*-")),
+            year = as.numeric(stringr::str_remove(date, "-.*")),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
         ) %>%
         dplyr::group_by(week_num, acom_name) %>%
-        dplyr::count(NCClade, .drop = FALSE) %>%
+        dplyr::count(varcol, .drop = FALSE) %>%
         dplyr::summarise(
             freq = n / sum(n),
             pct = freq * 100,
             counts = n,
             sum = sum(counts),
-            NCClade = NCClade,
+            varcol = varcol,
             acom_name = acom_name
         ) %>%
         tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
-        dplyr::filter(NCClade == variant) %>%
+        dplyr::filter(varcol == variant) %>%
         dplyr::mutate(text = stringr::str_c("C.A:", acom_name, "<br>Frequency:", pct, sep = " "))
 
     # Plot data
@@ -227,18 +232,14 @@ plot_variant_by_com <- function(df, variant) {
         dplyr::rename("C.A" = "acom_name") %>%
         ggplot(aes(week_num, freq, colour = C.A, group = C.A, text = text)) +
         stat_smooth(se = F, method = "loess", formula = "y ~ x", size = 0.8,
-                    alpha = 0.5, geom = "line") +
+                    alpha = 0.5, geom = "line", lty = 5) +
+        geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.3, shape = 21) +
         scale_colour_manual(values = pals::polychrome() %>% as.vector(), name = "") +
         scale_y_continuous(labels = scales::percent,
                            limits = c(0, 1.05), breaks = seq(0, 1, by = 0.25)) +
         labs(x = "", y = "Frequency") +
         theme_minimal(base_rect_size = 0) +
-        theme(legend.position = "none",
-              axis.text.x = element_text(
-                  angle = 90,
-                  hjust = 1,
-                  vjust = 0.5
-              ))
+        theme(legend.position = "none")
 
     # Convert to plotly
     plotly::ggplotly(pp, tooltip = "colour") %>%
