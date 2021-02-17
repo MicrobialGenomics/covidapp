@@ -112,7 +112,8 @@ per_ca_module_server <- function(id) {
                             pal = input$pal_p1
                         )
                 })
-        })
+        }) %>%
+            shiny::bindCache(input$bar_p1, input$stack_p1, input$var_annot)
 
         output$plots <- shiny::renderUI({
             lapply(input$option_ca, function(pp) {
@@ -126,7 +127,8 @@ per_ca_module_server <- function(id) {
                     )
                 )
             })
-        })
+        }) %>%
+            shiny::bindCache(input$option_ca)
 
     })
 }
