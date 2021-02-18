@@ -17,18 +17,18 @@ ui <- function() {
             fluid = TRUE,
             collapsible = TRUE,
 
-            # TAB1: Results
+            # TAB1: Overview
             shiny::tabPanel(
-                title = "Results",
+                title = "Overview",
                 value = "tab_1",
-                plot_results_module_ui("tab1")
+                overview_module_ui("tab1")
             ),
 
             # TAB2: Cat map
             shiny::tabPanel(
                 title = "Sequencing efforts",
                 value = "tab_2",
-                cat_map_module_ui("tab2")
+                map_module_ui("tab2")
             ),
 
             # TAB3: Per Autonomous Com
@@ -62,10 +62,10 @@ server <- function(){
     function(input, output, session) {
 
         ## Module tab 1
-        plot_results_module_server("tab1")
+        overview_module_server("tab1")
 
         ## Module tab 2
-        cat_map_module_server("tab2")
+        map_module_server("tab2")
 
         ## Module tab 3
         per_ca_module_server("tab3")
