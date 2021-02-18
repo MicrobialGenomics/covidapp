@@ -10,7 +10,8 @@ plot_vairants(
   var = "freq",
   pal = "mg",
   pal_dir = -1,
-  clade = NULL
+  clade = NULL,
+  plotly = TRUE
 )
 }
 \arguments{
@@ -25,9 +26,11 @@ plot_vairants(
 \item{pal_dir}{Palete direction order. Options: 1 and -1}
 
 \item{clade}{List with clade to plot}
+
+\item{plotly}{boolean indicating if output plot must be plotly}
 }
 \value{
-plotly object
+plotly or ggplot object
 }
 \description{
 Plot variants
