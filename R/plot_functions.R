@@ -48,27 +48,22 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
 #' @param pal Used palette
 #' @param pal_dir Palete direction order. Options: 1 and -1
 #' @param clade List with clade to plot
+#' @param plotly boolean indicating if output plot must be plotly
 #'
-#' @return plotly object
+#' @return plotly or ggplot object
 #' @export
 plot_vairants <- function(df,
                           type = "density",
                           var = "freq",
                           pal = "mg",
                           pal_dir = -1,
-                          clade = NULL) {
+                          clade = NULL,
+                          plotly = TRUE) {
 
     # filter clade
     if (!is.null(clade)) {
         df <- df %>% dplyr::filter(clade %in% clade)
     }
-
-    # define order by median
-    # ord <- df %>%
-    #     dplyr::group_by(clade) %>%
-    #     dplyr::summarise(mean = mean(!!sym(var))) %>%
-    #     dplyr::arrange(mean) %>%
-    #     dplyr::pull(clade)
 
     # Text label for plotly
     df <- df %>%
@@ -98,7 +93,7 @@ plot_vairants <- function(df,
 
      # Common plot
     pp <- pp +
-        theme_minimal(base_rect_size = 0) +
+        theme_minimal(base_rect_size = 0, base_size = 12) +
         labs(x = "", y = t_2)
 
     if (var == "freq") {
@@ -113,20 +108,15 @@ plot_vairants <- function(df,
         pp <- pp + scale_fill_manual(values = pal)
     }
 
-    ## Converting to plotly
-    # title <- list(text = stringr::str_c(
-    #     glue::glue("SARS-CoV-2 Variant {t_1} by Week, Full GISAID"),
-    #     "<br>", "<sup>", "Feb 10th (Spain)", "</sup>"
-    # ))
-
-    plotly::ggplotly(pp, tooltip = "text") %>%
-        plotly::layout(
-            hovermode = 'closest',
-            legend = list(orientation = 'h', y = -0.2)
-            #title = title,
-            #margin = list(l = 0, r = 0, b = 0, t = 50, pad = 4)
-        ) %>%
-        plotly::config(displaylogo = FALSE)
+    if (isTRUE(plotly)) {
+        pp <- plotly::ggplotly(pp, tooltip = "text") %>%
+            plotly::layout(
+                hovermode = 'closest',
+                legend = list(orientation = 'h', y = -0.2)
+            ) %>%
+            plotly::config(displaylogo = FALSE)
+    }
+    pp
 }
 
 
@@ -176,18 +166,10 @@ efforts_by_center <- function(df, pos = "stack") {
         pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
     }
 
-    ## Converting to plotly
-    # title <- list(text = stringr::str_c(
-    #     glue::glue("Sequencing efforts by Week, Full GISAID"),
-    #     "<br>", "<sup>", "Feb 10th (Spain)", "</sup>"
-    # ))
-
     plotly::ggplotly(pp, tooltip = c("fill", "count")) %>%
         plotly::layout(
             hovermode = 'compare',
             legend = list(orientation = 'h', y = -10)
-            # title = title,
-            # margin = list(l = 20, r = 20, b = 0, t = 50, pad = 4)
         ) %>%
         plotly::config(displaylogo = FALSE)
 }
@@ -277,47 +259,60 @@ efforts_all <- function(df) {
 }
 
 
-# ### Header Looks like
-# ##collection_date;sample_id;library_id;QPass;RawReads;PercCov;DepthOfCoverage;NCClade;PassReads;WeekNumber
-# require(dplyr)
-#
-# provinces<-xlsx::read.xlsx("~/Downloads/16codmun_en.xls",sheetIndex = 1)
-# colnames(provinces)<-c("ProvinceCode","MunicipalCode","ComarcaCode","MunicipalName","ProvinceName")
-# provinces<-provinces[-1,]
-# sum(mergedData$location %in% provinces$MunicipalName) ### All MunicipalNames have a province assigned
-# dim(mergedData)
-#
-# mergedData$week<-as.factor(paste(strftime(mergedData$date, format = "%y"),strftime(mergedData$date, format = "%V"),sep="-"))
-# mergedData$month<-as.factor(paste(strftime(mergedData$date, format = "%y"),strftime(mergedData$date, format = "%m"),sep="-"))
-# mergedData$year
-# mergedData %>%
-#     dplyr::filter(country == "Spain") %>%
-#     dplyr::select(c(seqName,date,region,country,division,location,sex,qc.overallStatus,aaSubstitutions,clade,lineage))%>%
-#     dplyr::rename(collection_date=date,sample_id=seqName,NCClade=clade,WeekNumber=week,)
-#
-# mergedData$week<-as.factor(paste(strftime(mergedData$date, format = "%y"),strftime(mergedData$date, format = "%V"),sep="-"))
-# mergedData$month<-as.factor(paste(strftime(mergedData$date, format = "%y"),strftime(mergedData$date, format = "%m"),sep="-"))
-#
-# # require(ggplot2)
-# # mergedData %>%
-# #     dplyr::filter(division=="Catalunya") %>%
-# #     dplyr::filter(! is.na(date)) %>%
-# # ggplot(aes(x=week,fill=Province))+geom_bar(stat="count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# #
-# # mergedData %>%
-# #     dplyr::filter(division=="Catalunya") %>%
-# #     dplyr::filter(! is.na(date)) %>%
-# #     ggplot(aes(x=month,fill=Province))+geom_bar(stat="count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# #
-# # require(viridis)
-# # mergedData %>%
-# #     dplyr::filter(country=="Spain") %>%
-# #     dplyr::filter(! is.na(date)) %>%
-# #     ggplot(aes(x=month,fill=division))+geom_bar(stat="count")+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+scale_color_brewer("Set3")
-#
+#' Plot variant by C.A.
+#'
+#' @param df tibble
+#' @param variant NCClade to plot
+#' @param var_col column name of plotting variant
+#'
+#' @return plotly
+#' @export
+plot_variant_line <- function(df, variant, var_col) {
+    # Preparing data
+    prepro <- df %>%
+        tidyr::drop_na(week_num) %>%
+        dplyr::mutate(varcol = !!sym(var_col)) %>%
+        dplyr::mutate(
+            varcol = factor(varcol, levels = unique(varcol)),
+            acom_name = factor(acom_name, levels = unique(acom_name)),
+            date = format(collection_date, "%y-%W"),
+            week = as.numeric(stringr::str_remove(date, ".*-")),
+            year = as.numeric(stringr::str_remove(date, "-.*")),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+        ) %>%
+        dplyr::group_by(week_num) %>%
+        dplyr::count(varcol, .drop = FALSE) %>%
+        dplyr::summarise(
+            freq = n / sum(n),
+            pct = freq * 100,
+            counts = n,
+            sum = sum(counts),
+            varcol = varcol
+        ) %>%
+        tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
+        dplyr::filter(varcol == variant)
 
+    # Plot data
+    pp <- prepro %>%
+        ggplot(aes(week_num, freq, colour = varcol, fill = varcol)) +
+        stat_smooth(
+            method = "loess",
+            formula = "y ~ x",
+            size = 0.8,
+            alpha = 0.5,
+            lty = 0
+        ) +
+        geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
+        scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+        scale_fill_manual(values = "#FEE08B") +
+        scale_colour_manual(values = "#F46D43") +
+        labs(x = "", y = "Frequency") +
+        theme_minimal(base_rect_size = 0) +
+        theme(legend.position = "none")
 
-
-
+    # Convert to plotly
+    plotly::ggplotly(pp) %>%
+        plotly::config(displaylogo = FALSE)
+}
 
 
