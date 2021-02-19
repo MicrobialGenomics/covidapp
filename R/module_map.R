@@ -130,15 +130,20 @@ map_module_server <- function(id) {
                 ) %>%
                 dplyr::pull(n)
 
-            p <- map$acom_name[!stringr::str_detect(map$acom_name, "Territorio")] %>%
+            p <- map$acom_name %>%
                 purrr::set_names() %>%
                 purrr::map(function(x) {
-                    df %>%
-                        prepro_variants(ca = x) %>%
-                        plot_vairants(type = "bar",
-                                      var = "counts",
-                                      pal = "mg",
-                                      plotly = FALSE)
+                    if (x == "Territorio no asociado a ninguna autonomía") {
+                        popup <- ggplot()
+                    } else {
+                        popup <- df %>%
+                            prepro_variants(ca = x) %>%
+                            plot_vairants(type = "bar",
+                                          var = "counts",
+                                          pal = "mg",
+                                          plotly = FALSE)
+                    }
+                    popup
                 })
 
 
