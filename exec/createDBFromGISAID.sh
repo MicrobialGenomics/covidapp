@@ -59,17 +59,21 @@ GisaidMetadataFile="/tmp/"`basename $GisaidMetadataFile`
 
 ### Define locations of local temporary work fils
 CatMetadataFile="/tmp/CatMetadata_${dateString}.tsv"
+echo "CatMetadataFile is $CatMetadataFile" >> /tmp/CatMetadata
 CatIDsFile="/tmp/CatIDs_${dateString}.txt"
+echo "CatIDsFile is $CatIDsFile"
 CatFastaFile="/tmp/CatFasta_${dateString}.fasta"
+echo "CatFastaFile is $CatFastaFile"
 
 ### Keep Catalan metadata and fasta sequences
 gzcat ${GisaidMetadataFile} | head -n 1 > $CatMetadataFile
-gzcat ${GisaidMetadataFile} | fgrep Europe | fgrep Spain >> $CatMetadataFile
-gzcat ${GisaidMetadataFile} | fgrep Europe | fgrep Spain  | awk '{print $1}' > $CatIDsFile
+gzcat ${GisaidMetadataFile} | fgrep Europe | fgrep "Spain/" >> $CatMetadataFile
+gzcat ${GisaidMetadataFile} | fgrep Europe | fgrep "Spain/"  | awk '{print $1}' > $CatIDsFile
+echo "Selecting Sequences with seqkit"
 seqkit grep -f $CatIDsFile $GisaidFastaFile > $CatFastaFile
 ### Use Metadata File to keep al Sequences From Catalunya, along with their collection dates, Originating and Submitting Labs and parse_seqids
 
-aws s3 cp $CatMetadataFile $GISAIDSubsetAnalysisDir
+aws s3 cp $CatMetadataFile ${CovidBucket}$GISAIDSubsetAnalysisDir
 # We could further filter sequences/metadata comparing with DB contents and keeping only "new" sequences and
 # This would increase speed
 echo "Using $CatFastaFile"
@@ -80,7 +84,7 @@ neherlab/nextclade nextclade --jobs 4 --input-fasta /seq/${CatFastaFile##*\/} \
 --output-csv='/seq/NextCladeSequences_output.csv'
 
 mv /tmp/NextCladeSequences_output.csv /tmp/NextClade_${dateString}_output.csv
-aws s3 cp /tmp/NextClade_${dateString}_output.csv $GISAIDSubsetAnalysisDir
+aws s3 cp /tmp/NextClade_${dateString}_output.csv ${CovidBucket}$GISAIDSubsetAnalysisDir
 
 ### To run Pangolin for phylogenetic classification
 rm -rf /tmp/lineage_report.csv
@@ -88,7 +92,7 @@ docker run -it --rm --volume="/tmp/:/seq" \
 microbialgenomics/pangolin pangolin /seq/${CatFastaFile##*\/} -t 4 -o /seq/
 
 cp /tmp/lineage_report.csv  /tmp/Pangolin_${dateString}_output.csv
-aws s3 cp /tmp/Pangolin_${dateString}_output.csv $GISAIDSubsetAnalysisDir
+aws s3 cp /tmp/Pangolin_${dateString}_output.csv ${CovidBucket}s$GISAIDSubsetAnalysisDir
 ### Now we have metadata and analysis results from NextClade and Pangolin
 
 ### Insert this information into specific DB
