@@ -14,6 +14,7 @@ overview_module_ui <- function(id) {
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
 
+            shiny::uiOutput(outputId = ns("region")),
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
@@ -26,9 +27,7 @@ overview_module_ui <- function(id) {
                 selected = "pangolin_lineage",
                 justified = TRUE
             ),
-            shiny::uiOutput(outputId = ns("option_clades")),
-            shiny::uiOutput(outputId = ns("region_p1")),
-            shiny::uiOutput(outputId = ns("region_p2"))
+            shiny::uiOutput(outputId = ns("option_clades"))
         ),
 
         # main
@@ -82,17 +81,21 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        df <- readr::read_rds("data/MergedData_spain.rds")
+        df <- readr::read_rds("data/MergedData_spain.rds") %>%
+            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"))
 
         clades <- shiny::reactive({
             if (input$var_annot == "NCClade") {
                 clades <- dplyr::pull(df, NCClade) %>% forcats::fct_infreq() %>% levels()
-            } else {
+            } else if (input$var_annot == "pangolin_lineage") {
                 clades <- dplyr::pull(df, pangolin_lineage) %>%
                     forcats::fct_infreq() %>%
                     levels() %>%
                     .[1:14]
+            } else {
+
             }
+
         }) %>%
             shiny::bindCache(input$var_annot)
 
@@ -100,10 +103,11 @@ overview_module_server <- function(id) {
         output$option_clades <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("variant"),
-                label = shiny::h5("Variants:"),
+                label = shiny::h5("Pick Variant:"),
                 choices = clades(),
                 selected = "B.1.1.7",
                 multiple = FALSE,
+                options = list(`live-search` = TRUE)
             )
         })
 
@@ -113,49 +117,44 @@ overview_module_server <- function(id) {
         })
 
         ## Render Region options
-        output$region_p1 <- shiny::renderUI({
+        output$region <- shiny::renderUI({
             shiny::req(exists("df"))
-            shinyWidgets::sliderTextInput(
-                inputId = session$ns("region_p1"),
+            shinyWidgets::pickerInput(
+                inputId = session$ns("region"),
                 label = shiny::h5("Region for left plots"),
-                choices = c("Spain", df$acom_name %>% unique()),
-                selected = "Spain"
-            )
-        })
-
-        output$region_p2 <- shiny::renderUI({
-            shiny::req(exists("df"))
-            shinyWidgets::sliderTextInput(
-                inputId = session$ns("region_p2"),
-                label = shiny::h5("Region for right plots"),
-                choices = c("Spain", df$acom_name %>% unique()),
-                selected = "Cataluña"
+                choices = list(
+                    "Left Plot" = c("Spain", df$acom_name %>% unique()),
+                    "Right Plot" = stringr::str_c(c("Spain", df$acom_name %>% unique()), " ")
+                ),
+                multiple = TRUE,
+                selected = c("Spain", "Catalunya "),
+                options =  list("max-options-group" = 1, `live-search` = TRUE)
             )
         })
 
         # Titles ------------------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
             annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants counts in {input$region_p1}")
+            glue::glue("Average weekly {annot} variants counts in {input$region[[1]]}")
         })
         output$title_1_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
         output$title_2_1 <- shiny::renderText({
             annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants counts in {input$region_p1}")
+            glue::glue("Average weekly {annot} variants counts in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
         output$title_2_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
         output$title_3_1 <- shiny::renderText({
-            glue::glue("Average weekly {input$variant} prevalece in {input$region_p1}")
+            glue::glue("Average weekly {input$variant} prevalece in {input$region[[1]]}")
         })
         output$title_3_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
         output$title_4_1 <- shiny::renderText({
-            glue::glue("Average weekly {input$variant} prevalece in {input$region_p2}")
+            glue::glue("Average weekly {input$variant} prevalece in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
         output$title_4_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
@@ -165,66 +164,66 @@ overview_module_server <- function(id) {
         # Plots -------------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$region_p1, input$var_annot,)
+            shiny::req(exists("df"), input$region, input$var_annot,)
             df %>%
-                prepro_variants(ca = input$region_p1, var_anno = input$var_annot) %>%
+                prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
                 plot_vairants(type = "bar", var = "counts", pal = "mg")
         }) %>%
-            shiny::bindCache(input$region_p1, input$var_annot)
+            shiny::bindCache(input$region, input$var_annot)
 
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$region_p2, input$var_annot)
+            shiny::req(exists("df"), stringr::str_remove_all(input$region[[2]], ' $' ), input$var_annot)
             df %>%
-                prepro_variants(ca = input$region_p2, var_anno = input$var_annot) %>%
+                prepro_variants(ca = stringr::str_remove_all(input$region[[2]], ' $' ), var_anno = input$var_annot) %>%
                 plot_vairants(type = "bar", var = "counts", pal = "mg")
         }) %>%
-            shiny::bindCache(input$region_p2, input$var_annot)
+            shiny::bindCache(input$region, input$var_annot)
 
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
             shiny::req(exists("df"),
                        input$var_annot,
-                       input$region_p1,
+                       input$region,
                        input$variant)
 
-            if (input$region_p1 == "Spain") {
+            if (input$region[[1]] == "Spain") {
                 pp <- df %>%
                     plot_variant_line(variant = input$variant,
                                       var_col = input$var_annot)
             } else {
                 pp <- df %>%
-                    dplyr::filter(acom_name == input$region_p1) %>%
+                    dplyr::filter(acom_name == input$region[[1]]) %>%
                     plot_variant_line(variant = input$variant,
                                       var_col = input$var_annot)
             }
 
             pp
         }) %>%
-            shiny::bindCache(input$var_annot, input$region_p1, input$variant)
+            shiny::bindCache(input$var_annot, input$region, input$variant)
 
 
         ## Plot 4
         output$plot_4 <- plotly::renderPlotly({
             shiny::req(exists("df"),
                        input$var_annot,
-                       input$region_p2,
+                       input$region,
                        input$variant)
 
-            if (input$region_p2 == "Spain") {
+            if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
                 pp <- df %>%
                     plot_variant_line(variant = input$variant,
                                       var_col = input$var_annot)
             } else {
                 pp <- df %>%
-                    dplyr::filter(acom_name == input$region_p2) %>%
+                    dplyr::filter(acom_name == stringr::str_remove_all(input$region[[2]], ' $' )) %>%
                     plot_variant_line(variant = input$variant,
                                       var_col = input$var_annot)
             }
 
             pp
         }) %>%
-            shiny::bindCache(input$var_annot, input$region_p2, input$variant)
+            shiny::bindCache(input$var_annot, input$region, input$variant)
     })
 
 }
