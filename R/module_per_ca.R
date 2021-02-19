@@ -82,7 +82,9 @@ per_ca_module_ui <- function(id) {
 per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        df <- readr::read_rds("data/MergedData_spain.rds")
+        df <- readr::read_rds("data/MergedData_spain.rds") %>%
+            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"))
+
         com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
 
         output$option_ca <- shiny::renderUI({
