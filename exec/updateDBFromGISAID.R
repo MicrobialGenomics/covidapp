@@ -47,7 +47,7 @@ opt <- optparse::parse_args(opt_parser)
 bucket <- "s3://covidseq-14012021-eu-west-1"
 aws_objects <- bucket %>%
     aws.s3::get_bucket_df() %>%
-    filter(str_detect(Key, "GISAID/DataFiles"))
+    filter(str_detect(Key, "GISAID/subsetAnalysis"))
 
 if(!file.exists(opt$pangolin) | is.null(opt$pangolin)) {
     pangolin <- aws_objects %>%
@@ -66,7 +66,7 @@ if(!file.exists(opt$pangolin) | is.null(opt$pangolin)) {
 
 if(!file.exists(opt$metadata) | is.null(opt$metadata)) {
     gisaidcore <- aws_objects %>%
-        filter(str_detect(Key, "metadata")) %>%
+        filter(str_detect(Key, "CatMetadata")) %>%
         arrange(desc(LastModified)) %>%
         slice_head(n = 1) %>%
         pull(Key) %>%
@@ -131,5 +131,6 @@ mergedData <- gisaidcore %>%
 
 readr::write_rds(
     mergedData,
-    file = str_c(opt$out_dir, "/MergedData_spain.rds"),
+    file = str_c(opt$out_dir, "/data/MergedData_spain.rds"),
 )
+

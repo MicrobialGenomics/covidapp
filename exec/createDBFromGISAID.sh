@@ -19,7 +19,7 @@ GisaidMetadataFile=`aws s3 ls ${CovidBucket}GISAID/DataFiles/ |awk '{print $4}' 
 dateString=`echo $GisaidFastaFile | sed s/sequences_// | sed s/\.fasta\.gz//`
 ### Define Origin filed for data in production environment
 GISAIDDataFilesDir="GISAID/DataFiles/"
-GISAIDSubsetAnalysisDir="GISAID/SubsetAnalysis/"
+GISAIDSubsetAnalysisDir="GISAID/subsetAnalysis/"
 GisaidFastaFile=${CovidBucket}${GISAIDDataFilesDir}$GisaidFastaFile
 GisaidMetadataFile=${CovidBucket}${GISAIDDataFilesDir}$GisaidMetadataFile
 
@@ -92,7 +92,7 @@ docker run -it --rm --volume="/tmp/:/seq" \
 microbialgenomics/pangolin pangolin /seq/${CatFastaFile##*\/} -t 4 -o /seq/
 
 cp /tmp/lineage_report.csv  /tmp/Pangolin_${dateString}_output.csv
-aws s3 cp /tmp/Pangolin_${dateString}_output.csv ${CovidBucket}s$GISAIDSubsetAnalysisDir
+aws s3 cp /tmp/Pangolin_${dateString}_output.csv ${CovidBucket}$GISAIDSubsetAnalysisDir
 ### Now we have metadata and analysis results from NextClade and Pangolin
 
 ### Insert this information into specific DB
