@@ -4,16 +4,8 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
-            title = shiny::div(shiny::div(
-                id = "img-id",
-                shiny::img(
-                    src = "images/logo_irsicaixa.png",
-                    height = '30',
-                    width = '90'
-                )
-            ), "covidApp"),
+            title = "covidApp",
             theme = shinythemes::shinytheme("flatly"),
-            #footer = footer(),
             fluid = TRUE,
             collapsible = TRUE,
 
@@ -21,7 +13,8 @@ ui <- function() {
             shiny::tabPanel(
                 title = "Overview",
                 value = "tab_1",
-                overview_module_ui("tab1")
+                overview_module_ui("tab1"),
+                footer
             ),
 
             # TAB2: Cat map
@@ -35,21 +28,24 @@ ui <- function() {
             shiny::tabPanel(
                 title = "Per C.A.",
                 value = "tab_3",
-                per_ca_module_ui("tab3")
+                per_ca_module_ui("tab3"),
+                footer
             ),
 
             # TAB4: Per Variant
             shiny::tabPanel(
                 title = "Per Variant",
                 value = "tab_4",
-                per_variant_module_ui("tab4")
+                per_variant_module_ui("tab4"),
+                footer
             ),
 
             # TAB5: Data download
             shiny::tabPanel(
                 title = "Data",
                 value = "tab_5",
-                data_dw_module_ui("tab5")
+                data_dw_module_ui("tab5"),
+                footer
             )
         )
     )
@@ -58,7 +54,7 @@ ui <- function() {
 #' Title
 #'
 #' @export
-server <- function(){
+server <- function() {
     function(input, output, session) {
 
         ## Module tab 1

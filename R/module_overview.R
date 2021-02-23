@@ -18,7 +18,10 @@ overview_module_ui <- function(id) {
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
-                choices = c("NCClade" = "NCClade", "Pangolin" = "pangolin_lineage"),
+                choices = c(
+                    "NCClade" = "NCClade",
+                    "Pangolin" = "pangolin_lineage"
+                ),
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
                     no = tags$i(class = "fa fa-square-o")
@@ -92,10 +95,7 @@ overview_module_server <- function(id) {
                     forcats::fct_infreq() %>%
                     levels() %>%
                     .[1:14]
-            } else {
-
             }
-
         }) %>%
             shiny::bindCache(input$var_annot)
 
