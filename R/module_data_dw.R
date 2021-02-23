@@ -4,32 +4,21 @@
 #'
 #' @export
 data_dw_module_ui <- function(id) {
-    ns <- shiny::NS(id)
-    shiny::pageWithSidebar(
-        headerPanel = shiny::headerPanel(""),
+  ns <- shiny::NS(id)
+  shiny::pageWithSidebar(
+    headerPanel = shiny::headerPanel(""),
 
-        # sidebar
-        sidebarPanel = shiny::sidebarPanel(
-            width = 2,
-
-            # Select Columns
-            shiny::downloadButton(
-              outputId = ns("download"),
-              label = "Download data file",
-              icon = shiny::icon("table")
-            )
-        ),
-
-        # main
-        shiny::mainPanel(
-          shiny::fixedRow(
-            shiny::column(
-              width = 12,
-              DT::dataTableOutput(shiny::NS(id, "table_1"))
-            )
-          )
-        )
+    sidebarPanel = NULL,
+    # main
+    mainPanel = shiny::mainPanel(
+      shiny::downloadButton(
+        outputId = ns("download"),
+        label = "Download data file",
+        icon = shiny::icon("table")
+      ),
+      DT::dataTableOutput(shiny::NS(id, "table_1"))
     )
+  )
 }
 
 #' Title
@@ -51,6 +40,7 @@ data_dw_module_server <- function(id) {
           options = list(
             deferRender = FALSE,
             scrollY = "70vh",
+            scrollX = TRUE,
             scroller = TRUE
           )
         )
