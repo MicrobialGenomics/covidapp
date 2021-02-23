@@ -52,7 +52,7 @@ h1, h2, h3, h4 { font-weight: 400; }
   transition-delay: 0;
 }
 
-#img-id{
+#img-id {
   position: fixed;
   right: 25px;
   top: 10px;

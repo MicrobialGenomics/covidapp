@@ -13,7 +13,6 @@ per_variant_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            style = "position:fixed;width: inherit;",
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
