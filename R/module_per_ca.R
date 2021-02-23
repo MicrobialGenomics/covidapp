@@ -13,7 +13,6 @@ per_ca_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            style = "position:fixed;width: inherit;",
             shiny::uiOutput(outputId = ns("option_ca")),
 
             shinyWidgets::radioGroupButtons(
