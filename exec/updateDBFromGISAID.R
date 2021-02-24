@@ -33,7 +33,7 @@ option_list <- list(
     optparse::make_option(
         c("-o", "--out_dir"),
         type = "character",
-        default = "./",
+        default = here::here(),
         help = "Output directory",
         metavar = "path"
     )
