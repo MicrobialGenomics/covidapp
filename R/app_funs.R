@@ -14,6 +14,8 @@ ui <- function() {
                 title = "Overview",
                 value = "tab_1",
                 overview_module_ui("tab1"),
+                shiny::br(),
+                shiny::br(),
                 footer
             ),
 
@@ -29,24 +31,31 @@ ui <- function() {
                 title = "Per C.A.",
                 value = "tab_3",
                 per_ca_module_ui("tab3"),
-                footer
-            ),
-
-            # TAB4: Per Variant
-            shiny::tabPanel(
-                title = "Per Variant",
-                value = "tab_4",
-                per_variant_module_ui("tab4"),
-                footer
-            ),
-
-            # TAB5: Data download
-            shiny::tabPanel(
-                title = "Data",
-                value = "tab_5",
-                data_dw_module_ui("tab5"),
+                shiny::br(),
+                shiny::br(),
                 footer
             )
+            # ,
+
+            # # TAB4: Per Variant
+            # shiny::tabPanel(
+            #     title = "Per Variant",
+            #     value = "tab_4",
+            #     per_variant_module_ui("tab4"),
+            #     shiny::br(),
+            #     shiny::br(),
+            #     footer
+            # ),
+            #
+            # # TAB5: Data download
+            # shiny::tabPanel(
+            #     title = "Data",
+            #     value = "tab_5",
+            #     data_dw_module_ui("tab5"),
+            #     shiny::br(),
+            #     shiny::br(),
+            #     footer
+            # )
         )
     )
 }
