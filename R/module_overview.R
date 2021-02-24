@@ -16,6 +16,18 @@ overview_module_ui <- function(id) {
 
             shiny::uiOutput(outputId = ns("region")),
             shinyWidgets::radioGroupButtons(
+                inputId = ns("stack_p1"),
+                label = shiny::h5("Pick y-axis transfomation:"),
+                choices = c("stack" = "counts", "fill" = "freq"),
+                checkIcon = list(
+                    yes = tags$i(class = "fa fa-check-square"),
+                    no = tags$i(class = "fa fa-square-o")
+                ),
+                status = "default",
+                selected = "counts",
+                justified = TRUE
+            ),
+            shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
                 choices = c(
@@ -85,7 +97,8 @@ overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         df <- readr::read_rds("data/MergedData_spain.rds") %>%
-            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"))
+            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
+            dplyr::filter(!acom_name == "Spain")
 
         clades <- shiny::reactive({
             if (input$var_annot == "NCClade") {
@@ -111,11 +124,6 @@ overview_module_server <- function(id) {
             )
         })
 
-        output$title_1 <- shiny::renderText({
-            shiny::req(input$stack_p1)
-            dplyr::if_else(isTRUE(input$stack_p1), "Counts", "Frequency")
-        })
-
         ## Render Region options
         output$region <- shiny::renderUI({
             shiny::req(exists("df"))
@@ -135,14 +143,14 @@ overview_module_server <- function(id) {
         # Titles ------------------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
             annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants counts in {input$region[[1]]}")
+            glue::glue("Average weekly {annot} variants {input$stack_p1} in {input$region[[1]]}")
         })
         output$title_1_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
         output$title_2_1 <- shiny::renderText({
             annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants counts in {stringr::str_remove_all(input$region[[2]], ' $' )}")
+            glue::glue("Average weekly {annot} variants {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
         output$title_2_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
@@ -164,21 +172,21 @@ overview_module_server <- function(id) {
         # Plots -------------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$region, input$var_annot,)
+            shiny::req(exists("df"), input$region, input$var_annot, input$stack_p1)
             df %>%
                 prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
-                plot_vairants(type = "bar", var = "counts", pal = "mg")
+                plot_vairants(type = "bar", var = input$stack_p1, pal = "mg")
         }) %>%
-            shiny::bindCache(input$region, input$var_annot)
+            shiny::bindCache(input$region, input$var_annot, input$stack_p1)
 
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
-            shiny::req(exists("df"), stringr::str_remove_all(input$region[[2]], ' $' ), input$var_annot)
+            shiny::req(exists("df"), stringr::str_remove_all(input$region[[2]], ' $' ), input$var_annot, input$stack_p1)
             df %>%
                 prepro_variants(ca = stringr::str_remove_all(input$region[[2]], ' $' ), var_anno = input$var_annot) %>%
-                plot_vairants(type = "bar", var = "counts", pal = "mg")
+                plot_vairants(type = "bar", var = input$stack_p1, pal = "mg")
         }) %>%
-            shiny::bindCache(input$region, input$var_annot)
+            shiny::bindCache(input$region, input$var_annot, input$stack_p1)
 
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
