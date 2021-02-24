@@ -75,11 +75,11 @@ server <- function() {
         ## Module tab 3
         per_ca_module_server("tab3")
 
-        ## Module tab 4
-        per_variant_module_server("tab4")
-
-        ## Module tab 5
-        data_dw_module_server("tab5")
+        # ## Module tab 4
+        # per_variant_module_server("tab4")
+        #
+        # ## Module tab 5
+        # data_dw_module_server("tab5")
     }
 }
 
