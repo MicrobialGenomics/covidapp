@@ -2,8 +2,6 @@ footer <- shiny::div(
     class = "footer",
     shiny::fluidPage(
         ## Spaces and div line
-        shiny::br(),
-        shiny::br(),
         shiny::hr(),
         shiny::br(),
 
@@ -25,7 +23,7 @@ footer <- shiny::div(
                         )
                     ),
                     shiny::tags$a(
-                        href = "",
+                        href = "https://twitter.com/intent/tweet?text=Hello%20world&url=http://ec2-34-254-223-195.eu-west-1.compute.amazonaws.com/covidapp/",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = '30px',
@@ -34,7 +32,7 @@ footer <- shiny::div(
                         )
                     ),
                     shiny::tags$a(
-                        href = "",
+                        href = "https://www.linkedin.com/sharing/share-offsite/?url=http://ec2-34-254-223-195.eu-west-1.compute.amazonaws.com/covidapp/",
                         shiny::img(
                             src = "images/linkedin.svg",
                             height = '30px',
