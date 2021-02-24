@@ -162,7 +162,7 @@ map_module_server <- function(id) {
                     stroke = FALSE,
                     fillOpacity = 0,
                     fillColor = "transparent",
-                    popup = leafpop::popupGraph(p, width = 400, height = 300)
+                    popup = leafpop::popupGraph(p, width = 500, height = 300)
                 )
         })
 
@@ -200,22 +200,3 @@ map_module_server <- function(id) {
         output$plot_cumsum <- shiny::renderPlot({ efforts_all(f_df())$pp_cumsum })
     })
 }
-
-
-# plot_pie <- function(com, df) {
-#     df %>%
-#         dplyr::mutate(NCClade = forcats::fct_infreq(NCClade)) %>%
-#         dplyr::filter(acom_name == com) %>%
-#         dplyr::count(NCClade, .drop = FALSE) %>%
-#         ggplot(aes(NCClade, n, fill = NCClade)) +
-#         geom_bar(stat = "identity", alpha = 0.7, position = "dodge") +
-#         theme_minimal() +
-#         scale_fill_brewer(palette = "Spectral", guide = F) +
-#         labs(x = "", title = com) +
-#         theme(axis.text.x = element_text(angle = 30, hjust = 1))
-# }
-
-
-
-
-
