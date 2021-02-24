@@ -27,6 +27,14 @@ map_module_ui <- function(id) {
             shiny::plotOutput(outputId = ns("plot_cumsum"), height = "150px", width = "100%"),
 
             shiny::uiOutput(outputId = ns("plot_date")),
+            shinyWidgets::materialSwitch(
+                inputId = ns("norm"),
+                label = "per 1e5 inhabitant correction",
+                value = TRUE,
+                right = TRUE,
+                width = "100%",
+                status = "info"
+            ),
 
             shiny::absolutePanel(
                 id = "logo",
@@ -82,7 +90,8 @@ map_module_server <- function(id) {
                 selected = format(max(df$date), "%d %b %y"),
                 grid = FALSE
             )
-        })
+        }) %>%
+            shiny::bindCache(input$date)
 
         # Filter by date
         f_df <- shiny::reactive({
@@ -103,8 +112,14 @@ map_module_server <- function(id) {
             ) %>%
             dplyr::pull(n)
 
-        bins = c(seq(0, max(map$cases) + 250 , by = 250))
+        bins = c(seq(0, max(map$cases) + max(map$cases)*0.2 , by = round(max(map$cases)*0.2)))
         cv_pal <- leaflet::colorBin("Oranges", domain = map$cases, bins = bins)
+
+        map$norm_cases <- map$cases / ca_inhabitants * 1e5
+        map$norm_cases[is.na(map$norm_cases)] <- 0
+
+        bins_norm = c(seq(0, max(map$norm_cases) + max(map$norm_cases)*0.2 , by = round(max(map$norm_cases)*0.2)))
+        cv_pal_norm <- leaflet::colorBin("Reds", domain = map$norm_cases, bins = bins_norm)
 
         base_map <- leaflet::leaflet(map) %>%
             leaflet::addTiles() %>%
@@ -112,14 +127,20 @@ map_module_server <- function(id) {
             leaflet::setView(lng = -4, lat = 40, zoom = 6) %>%
             leaflet::addLegend(
                 position = "topright",
+                pal = cv_pal_norm,
+                values = ~ norm_cases,
+                title = "<small>Seq. cases per 1e5 inhab.</small>"
+            ) %>%
+            leaflet::addLegend(
+                position = "topright",
                 pal = cv_pal,
                 values = ~ cases,
-                title = "<small>Sequenced cases</small>"
+                title = "<small>Total Sequenced cases</small>"
             )
 
         output$mymap <- leaflet::renderLeaflet({ base_map })
 
-        observeEvent(input$plot_date, {
+        observeEvent(c(input$plot_date, input$norm),  {
 
             map$cases <- f_df() %>%
                 dplyr::count(acom_name, .drop = FALSE) %>%
@@ -146,32 +167,51 @@ map_module_server <- function(id) {
                     popup
                 })
 
-
-            leaflet::leafletProxy("mymap") %>%
-                leaflet::clearMarkers() %>%
-                leaflet::clearShapes() %>%
-                leaflet::addPolygons(
-                    data = map,
-                    stroke = FALSE,
-                    smoothFactor = 0.3,
-                    fillOpacity = 0.6,
-                    fillColor = ~ cv_pal(cases)
-                ) %>%
-                leaflet::addPolygons(
-                    data = map,
-                    stroke = FALSE,
-                    fillOpacity = 0,
-                    fillColor = "transparent",
-                    popup = leafpop::popupGraph(p, width = 500, height = 300)
-                )
+            if (isTRUE(input$norm)) {
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        smoothFactor = 0.3,
+                        fillOpacity = 0.6,
+                        fillColor = ~ cv_pal_norm(norm_cases)
+                    ) %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        fillOpacity = 0,
+                        fillColor = "transparent",
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
+                    )
+            } else {
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        smoothFactor = 0.3,
+                        fillOpacity = 0.6,
+                        fillColor = ~ cv_pal(cases)
+                    ) %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        fillOpacity = 0,
+                        fillColor = "transparent",
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
+                    )
+            }
         })
-
 
         ## Absolute panel ------------------------------------------------------
         output$acum_seq <- shiny::renderText({
             acum_seq <- prettyNum(nrow(f_df()), big.mark = ",")
             glue::glue("{acum_seq} Total Sequences")
-        })
+        }) %>%
+            shiny::bindCache(f_df())
 
         output$week_seq <- shiny::renderText({
             week_seq <- f_df() %>%
@@ -180,12 +220,14 @@ map_module_server <- function(id) {
                 prettyNum(., big.mark = ",")
 
             glue::glue("{week_seq} New Sequences")
-        })
+        }) %>%
+            shiny::bindCache(f_df())
 
         output$sel_week <- shiny::renderText({
             sel_week <- input$plot_date
             sel_week
-        })
+        }) %>%
+            shiny::bindCache(input$plot_date)
 
         output$count_ca <- shiny::renderText({
             count_ca <- f_df() %>%
@@ -194,9 +236,13 @@ map_module_server <- function(id) {
                 nrow()
 
             glue::glue("{count_ca} of 19 C. A. with reported sequences")
-        })
+        }) %>%
+            shiny::bindCache(f_df())
 
-        output$plot_counts <- shiny::renderPlot({ efforts_all(f_df())$pp_counts })
-        output$plot_cumsum <- shiny::renderPlot({ efforts_all(f_df())$pp_cumsum })
+        output$plot_counts <- shiny::renderPlot({ efforts_all(f_df())$pp_counts }) %>%
+            shiny::bindCache(f_df())
+
+        output$plot_cumsum <- shiny::renderPlot({ efforts_all(f_df())$pp_cumsum }) %>%
+            shiny::bindCache(f_df())
     })
 }
