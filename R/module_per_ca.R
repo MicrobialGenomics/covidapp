@@ -27,18 +27,18 @@ per_ca_module_ui <- function(id) {
                 selected = "counts",
                 justified = TRUE
             ),
-            shinyWidgets::radioGroupButtons(
-                inputId = ns("bar_p1"),
-                label = shiny::h5("Pick plot type:"),
-                choices = c("bar", "density"),
-                checkIcon = list(
-                    yes = tags$i(class = "fa fa-check-square"),
-                    no = tags$i(class = "fa fa-square-o")
-                ),
-                status = "default",
-                selected = "bar",
-                justified = TRUE
-            ),
+            # shinyWidgets::radioGroupButtons(
+            #     inputId = ns("bar_p1"),
+            #     label = shiny::h5("Pick plot type:"),
+            #     choices = c("bar", "density"),
+            #     checkIcon = list(
+            #         yes = tags$i(class = "fa fa-check-square"),
+            #         no = tags$i(class = "fa fa-square-o")
+            #     ),
+            #     status = "default",
+            #     selected = "bar",
+            #     justified = TRUE
+            # ),
             shiny::h5("Pick palette:"),
             shinyWidgets::sliderTextInput(
                 inputId = ns("pal_p1"),
@@ -97,7 +97,7 @@ per_ca_module_server <- function(id) {
         })
 
         all_plots <- shiny::reactive({
-            shiny::req(input$bar_p1)
+            # shiny::req(input$bar_p1)
             shiny::req(input$stack_p1)
             shiny::req(input$var_annot)
 
@@ -107,14 +107,14 @@ per_ca_module_server <- function(id) {
                     df %>%
                         prepro_variants(ca = com, var_anno = input$var_annot) %>%
                         plot_vairants(
-                            type = input$bar_p1,
+                            type = "bar", #input$bar_p1,
                             var = input$stack_p1,
                             pal_dir = -1,
                             pal = input$pal_p1
                         )
                 })
         }) %>%
-            shiny::bindCache(input$bar_p1, input$stack_p1, input$var_annot)
+            shiny::bindCache(input$stack_p1, input$var_annot) #, input$bar_p1)
 
         output$plots <- shiny::renderUI({
             lapply(input$option_ca, function(pp) {
