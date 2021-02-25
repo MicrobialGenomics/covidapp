@@ -11,9 +11,9 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
     if (var_anno == "pangolin_lineage") {
         to_retain <- df %>%
             dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
-            dplyr::pull(clade) %>% levels() %>% .[1:12]
+            dplyr::pull(clade) %>% levels() %>% .[1:11]
 
-        df <- df %>% dplyr::filter(!!sym(var_anno) %in% to_retain)
+        df <- df %>% dplyr::mutate(!!sym(var_anno) := if_else(!!sym(var_anno) %in% to_retain, !!sym(var_anno), "Other"))
     }
 
     df <- df %>%
@@ -313,6 +313,96 @@ plot_variant_line <- function(df, variant, var_col) {
     # Convert to plotly
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
+}
+
+
+prepro_mutations <- function(df, ca = "Spain") {
+    df <- df %>%
+        dplyr::select(week_num, aaSubstitutions, aaDeletions, collection_date) %>%
+        tidyr::drop_na(week_num) %>%
+        dplyr::mutate(
+            date = format(collection_date, "%y-%W"),
+            week = as.numeric(stringr::str_remove(date, ".*-")),
+            year = as.numeric(stringr::str_remove(date, "-.*")),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+        ) %>%
+        tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE) %>%
+        tidyr::separate_rows(mutation, sep = ",") %>%
+        dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
+        dplyr::filter(!mutation == "NA") %>%
+        dplyr::mutate(clade = forcats::fct_infreq(mutation) %>% forcats::fct_rev())
+
+
+    if (ca != "Spain") { df <- df %>% dplyr::filter(acom_name == ca) }
+
+    df %>%
+        dplyr::group_by(week_num, .drop = FALSE) %>%
+        dplyr::select(week_num, clade) %>%
+        dplyr::count(clade, .drop = FALSE) %>%
+        dplyr::summarise(freq = n / sum(n),
+                     pct = freq * 100,
+                     counts = n,
+                     sum = sum(counts),
+                     clade = clade) %>%
+        dplyr::mutate(pos = stringr::str_sub(clade, end = -2))
+}
+
+plot_mutations <- function(df,
+                           position = "ORF1b:P314",
+                           var = "counts",
+                           pal = "mg",
+                           pal_dir = -1,
+                           plotly = TRUE) {
+
+    df <- df %>% dplyr::filter(pos == position)
+
+    # Text label for plotly
+    df <- df %>%
+        dplyr::mutate(#clade = factor(clade, levels = ord),
+            text = stringr::str_c(
+                "Mutation:", clade,
+                "<br>frequency:", round(freq, 2),
+                "<br>percentage:", round(pct, 2),
+                "<br>count:", counts,
+                "<br>total:", sum,
+                sep = " "
+            ))
+
+
+    t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
+    t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
+
+    pp <- df %>%
+        ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
+        geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA)
+
+
+    # Common plot
+    pp <- pp +
+        theme_minimal(base_rect_size = 0, base_size = 12) +
+        labs(x = "", y = t_2)
+
+    if (var == "freq") {
+        pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
+    }
+
+    if (!pal == "mg") {
+        pp <- pp + scale_fill_brewer(palette = pal, direction = pal_dir, name = "")
+    } else {
+        pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+                 "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+        pp <- pp + scale_fill_manual(values = pal)
+    }
+
+    if (isTRUE(plotly)) {
+        pp <- plotly::ggplotly(pp, tooltip = "text") %>%
+            plotly::layout(
+                hovermode = 'closest',
+                legend = list(orientation = 'h', y = -0.2)
+            ) %>%
+            plotly::config(displaylogo = FALSE)
+    }
+    pp
 }
 
 
