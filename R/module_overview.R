@@ -134,8 +134,9 @@ overview_module_server <- function(id) {
                 clades <- dplyr::pull(df, pangolin_lineage) %>%
                     forcats::fct_infreq() %>% levels() %>% .[1:14]
             } else if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
                 clades <- mutations %>%
-                    dplyr::filter(pos == input$mutation_positions) %>%
+                    dplyr::filter(stringr::str_detect(mutation, input$mutation_positions)) %>%
                     dplyr::pull(1)
             }
         }) %>%
@@ -206,20 +207,40 @@ overview_module_server <- function(id) {
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
             shiny::req(exists("df"), input$region, input$var_annot, input$stack_p1)
-            df %>%
-                prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
-                plot_vairants(type = "bar", var = input$stack_p1, pal = "mg")
+            if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
+                pp <- df %>%
+                    prepro_mutations(ca = input$region[[1]]) %>%
+                    plot_mutations(mut_pos = input$mutation_positions, var = input$stack_p1)
+            } else {
+                pp <- df %>%
+                    prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
+                    plot_vairants(type = "bar", var = input$stack_p1)
+            }
+            pp
         }) %>%
-            shiny::bindCache(input$region, input$var_annot, input$stack_p1)
+            shiny::bindCache(input$region, input$var_annot, input$stack_p1, input$mutation_positions)
 
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
-            shiny::req(exists("df"), stringr::str_remove_all(input$region[[2]], ' $' ), input$var_annot, input$stack_p1)
-            df %>%
-                prepro_variants(ca = stringr::str_remove_all(input$region[[2]], ' $' ), var_anno = input$var_annot) %>%
-                plot_vairants(type = "bar", var = input$stack_p1, pal = "mg")
+            shiny::req(exists("df"), input$var_annot, input$stack_p1, input$region)
+
+            if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
+                pp <- df %>%
+                    prepro_mutations(ca = stringr::str_remove_all(input$region[[2]], ' $')) %>%
+                    plot_mutations(mut_pos = input$mutation_positions, var = input$stack_p1)
+            } else {
+                pp <- df %>%
+                    prepro_variants(
+                        ca = stringr::str_remove_all(input$region[[2]], ' $'),
+                        var_anno = input$var_annot
+                    ) %>%
+                    plot_vairants(type = "bar", var = input$stack_p1)
+            }
+            pp
         }) %>%
-            shiny::bindCache(input$region, input$var_annot, input$stack_p1)
+            shiny::bindCache(input$region, input$var_annot, input$stack_p1, input$mutation_positions)
 
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
