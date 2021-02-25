@@ -32,7 +32,8 @@ overview_module_ui <- function(id) {
                 label = shiny::h5("Pick Variant Annotation:"),
                 choices = c(
                     "NCClade" = "NCClade",
-                    "Pangolin" = "pangolin_lineage"
+                    "Pangolin" = "pangolin_lineage",
+                    "Mutation" = "mutation"
                 ),
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
@@ -42,6 +43,7 @@ overview_module_ui <- function(id) {
                 selected = "pangolin_lineage",
                 justified = TRUE
             ),
+            shiny::uiOutput(outputId = ns("mutation_positions")),
             shiny::uiOutput(outputId = ns("option_clades"))
         ),
 
@@ -96,27 +98,54 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
+        ## Load data
         df <- readr::read_rds("data/MergedData_spain.rds") %>%
             dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
             dplyr::filter(!acom_name == "Spain")
 
+        ## Mutation Position UI
+        mutations <- df %>%
+            dplyr::select(aaSubstitutions, aaDeletions) %>%
+            tidyr::unite(mutation, sep = ",", remove = TRUE) %>%
+            tidyr::separate_rows(mutation, sep = ",") %>%
+            dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
+            dplyr::filter(!mutation == "NA") %>%
+            dplyr::count(mutation, sort = TRUE) %>%
+            #dplyr::filter(n > 25) %>%
+            dplyr::mutate(pos = stringr::str_sub(mutation, end = -2))
+
+        output$mutation_positions <- shiny::renderUI({
+            shiny::req(input$var_annot == "mutation")
+            shinyWidgets::pickerInput(
+                inputId = session$ns("mutation_positions"),
+                label = shiny::h5("Pick Mutation Position:"),
+                choices = unique(mutations$pos),
+                selected = unique(mutations$pos)[1],
+                multiple = FALSE,
+                options = list(`live-search` = TRUE)
+            )
+        })
+
+        ## Clades/Variants/Mutations UI
         clades <- shiny::reactive({
             if (input$var_annot == "NCClade") {
                 clades <- dplyr::pull(df, NCClade) %>% forcats::fct_infreq() %>% levels()
             } else if (input$var_annot == "pangolin_lineage") {
                 clades <- dplyr::pull(df, pangolin_lineage) %>%
-                    forcats::fct_infreq() %>%
-                    levels() %>%
-                    .[1:14]
+                    forcats::fct_infreq() %>% levels() %>% .[1:14]
+            } else if (input$var_annot == "mutation") {
+                clades <- mutations %>%
+                    dplyr::filter(pos == input$mutation_positions) %>%
+                    dplyr::pull(1)
             }
         }) %>%
-            shiny::bindCache(input$var_annot)
+            shiny::bindCache(input$var_annot, input$mutation_positions)
 
 
         output$option_clades <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("variant"),
-                label = shiny::h5("Pick Variant:"),
+                label = shiny::h5("Pick Variant / Mutation:"),
                 choices = clades(),
                 selected = "B.1.1.7",
                 multiple = FALSE,
@@ -142,15 +171,19 @@ overview_module_server <- function(id) {
 
         # Titles ------------------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
-            annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants {input$stack_p1} in {input$region[[1]]}")
+            annot <- dplyr::case_when(input$var_annot == "NCClade" ~ "Nextclade variants",
+                                      input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                                      TRUE ~ "Mutatations")
+            glue::glue("Average weekly {annot} {input$stack_p1} in {input$region[[1]]}")
         })
         output$title_1_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
         output$title_2_1 <- shiny::renderText({
-            annot <- ifelse(input$var_annot == "NCClade", "Nextclade", "Pangolin")
-            glue::glue("Average weekly {annot} variants {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
+            annot <- dplyr::case_when(input$var_annot == "NCClade" ~ "Nextclade variants",
+                                      input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                                      TRUE ~ "Mutatations")
+            glue::glue("Average weekly {annot} {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
         output$title_2_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
