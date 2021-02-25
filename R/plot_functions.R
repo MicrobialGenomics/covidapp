@@ -13,7 +13,7 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
             dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
             dplyr::pull(clade) %>% levels() %>% .[1:11]
 
-        df <- df %>% dplyr::mutate(!!sym(var_anno) := if_else(!!sym(var_anno) %in% to_retain, !!sym(var_anno), "Other"))
+        df <- df %>% dplyr::mutate(!!sym(var_anno) := dplyr::if_else(!!sym(var_anno) %in% to_retain, !!sym(var_anno), "Other"))
     }
 
     df <- df %>%
@@ -268,6 +268,15 @@ efforts_all <- function(df) {
 #' @return plotly
 #' @export
 plot_variant_line <- function(df, variant, var_col) {
+
+    if (var_col == "mutation") {
+        df <- df %>%
+            tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE) %>%
+            tidyr::separate_rows(mutation, sep = ",") %>%
+            dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
+            dplyr::filter(!mutation == "NA")
+    }
+
     # Preparing data
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
@@ -316,9 +325,16 @@ plot_variant_line <- function(df, variant, var_col) {
 }
 
 
+#' Title
+#'
+#' @param df
+#' @param ca
+#'
+#' @return
+#' @export
 prepro_mutations <- function(df, ca = "Spain") {
     df <- df %>%
-        dplyr::select(week_num, aaSubstitutions, aaDeletions, collection_date) %>%
+        dplyr::select(week_num, aaSubstitutions, aaDeletions, collection_date, acom_name) %>%
         tidyr::drop_na(week_num) %>%
         dplyr::mutate(
             date = format(collection_date, "%y-%W"),
@@ -347,14 +363,23 @@ prepro_mutations <- function(df, ca = "Spain") {
         dplyr::mutate(pos = stringr::str_sub(clade, end = -2))
 }
 
-plot_mutations <- function(df,
-                           position = "ORF1b:P314",
-                           var = "counts",
-                           pal = "mg",
-                           pal_dir = -1,
-                           plotly = TRUE) {
 
-    df <- df %>% dplyr::filter(pos == position)
+#' Title
+#'
+#' @param df
+#' @param var
+#' @param pal
+#' @param plotly
+#' @param mut_pos
+#'
+#' @return
+plot_mutations <- function(df,
+                          mut_pos= "ORF1b:P314",
+                          var = "counts",
+                          pal = "mg",
+                          plotly = TRUE) {
+
+    df <- df %>% dplyr::filter(stringr::str_detect(clade, mut_pos))
 
     # Text label for plotly
     df <- df %>%
@@ -368,17 +393,12 @@ plot_mutations <- function(df,
                 sep = " "
             ))
 
-
     t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
     t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
 
     pp <- df %>%
         ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
-        geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA)
-
-
-    # Common plot
-    pp <- pp +
+        geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA) +
         theme_minimal(base_rect_size = 0, base_size = 12) +
         labs(x = "", y = t_2)
 
@@ -386,13 +406,9 @@ plot_mutations <- function(df,
         pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
     }
 
-    if (!pal == "mg") {
-        pp <- pp + scale_fill_brewer(palette = pal, direction = pal_dir, name = "")
-    } else {
-        pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
-                 "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
-        pp <- pp + scale_fill_manual(values = pal)
-    }
+    pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+             "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+    pp <- pp + scale_fill_manual(values = rev(pal))
 
     if (isTRUE(plotly)) {
         pp <- plotly::ggplotly(pp, tooltip = "text") %>%
@@ -404,5 +420,6 @@ plot_mutations <- function(df,
     }
     pp
 }
+
 
 
