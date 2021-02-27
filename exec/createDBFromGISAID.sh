@@ -79,6 +79,7 @@ aws s3 cp $CatMetadataFile ${CovidBucket}$GISAIDSubsetAnalysisDir
 echo "Using $CatFastaFile"
 
 ### To run Nextclade to call mutations on sequences and signature mutation-based phylotyping
+docker pull neherlab/nextclade
 docker run -it --rm -u 1000 --volume="/tmp/:/seq" \
 neherlab/nextclade nextclade --jobs 4 --input-fasta /seq/${CatFastaFile##*\/} \
 --output-csv='/seq/NextCladeSequences_output.csv'
@@ -88,8 +89,10 @@ aws s3 cp /tmp/NextClade_${dateString}_output.csv ${CovidBucket}$GISAIDSubsetAna
 
 ### To run Pangolin for phylogenetic classification
 rm -rf /tmp/lineage_report.csv
+
+docker pull staphb/pangolin
 docker run -it --rm --volume="/tmp/:/seq" \
-microbialgenomics/pangolin pangolin /seq/${CatFastaFile##*\/} -t 4 -o /seq/
+staphb/pangolin pangolin /seq/${CatFastaFile##*\/} -t 4 -o /seq/
 
 cp /tmp/lineage_report.csv  /tmp/Pangolin_${dateString}_output.csv
 aws s3 cp /tmp/Pangolin_${dateString}_output.csv ${CovidBucket}$GISAIDSubsetAnalysisDir
