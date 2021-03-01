@@ -333,7 +333,18 @@ plot_variant_line <- function(df, variant, var_col) {
 #' @return
 #' @export
 prepro_mutations <- function(df, ca = "Spain") {
-    df <- df %>%
+
+    all_pos <- df %>%
+        tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE) %>%
+        dplyr::select(mutation) %>%
+        tidyr::separate_rows(mutation, sep = ",") %>%
+        dplyr::filter(mutation != "NA") %>%
+        dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
+        dplyr::mutate(mutation = stringr::str_remove_all(mutation, "[:alpha:]$|-$")) %>%
+        dplyr::pull(mutation) %>%
+        unique()
+
+    pre <- df %>%
         dplyr::select(week_num, aaSubstitutions, aaDeletions, collection_date, acom_name) %>%
         tidyr::drop_na(week_num) %>%
         dplyr::mutate(
@@ -342,25 +353,32 @@ prepro_mutations <- function(df, ca = "Spain") {
             year = as.numeric(stringr::str_remove(date, "-.*")),
             week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
         ) %>%
-        tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE) %>%
-        tidyr::separate_rows(mutation, sep = ",") %>%
-        dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
-        dplyr::filter(!mutation == "NA") %>%
-        dplyr::mutate(clade = forcats::fct_infreq(mutation) %>% forcats::fct_rev())
+        tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE)
 
+    if (ca != "Spain") { pre <- pre %>% dplyr::filter(acom_name == ca) }
 
-    if (ca != "Spain") { df <- df %>% dplyr::filter(acom_name == ca) }
-
-    df %>%
-        dplyr::group_by(week_num, .drop = FALSE) %>%
-        dplyr::select(week_num, clade) %>%
-        dplyr::count(clade, .drop = FALSE) %>%
-        dplyr::summarise(freq = n / sum(n),
-                     pct = freq * 100,
-                     counts = n,
-                     sum = sum(counts),
-                     clade = clade) %>%
-        dplyr::mutate(pos = stringr::str_sub(clade, end = -2))
+    pre %>%
+        dplyr::pull(week_num) %>%
+        unique() %>%
+        purrr::map_dfr(function(x) {
+            pre %>%
+                dplyr::filter(week_num == as.Date(x)) %>%
+                dplyr::rowwise() %>%
+                dplyr::mutate(mutation = check_mutations(mutation, all_pos)) %>%
+                tidyr::unnest(mutation) %>%
+                dplyr::select(week_num, mutation) %>%
+                dplyr::count(mutation, .drop = FALSE) %>%
+                dplyr::mutate(pos = stringr::str_sub(mutation, end = -2)) %>%
+                dplyr::group_by(pos) %>%
+                dplyr::summarise(week_num = as.Date(x),
+                                 freq = n / sum(n),
+                                 pct = freq * 100,
+                                 counts = n,
+                                 sum = sum(counts),
+                                 mutation = mutation) %>%
+                dplyr::ungroup()
+        }) %>%
+        dplyr::mutate(mutation = forcats::fct_infreq(mutation))
 }
 
 
@@ -374,18 +392,19 @@ prepro_mutations <- function(df, ca = "Spain") {
 #'
 #' @return
 plot_mutations <- function(df,
-                          mut_pos= "ORF1b:P314",
+                          mut_pos = "ORF1b:P314",
                           var = "counts",
                           pal = "mg",
                           plotly = TRUE) {
 
-    df <- df %>% dplyr::filter(stringr::str_detect(clade, mut_pos))
+    df <- df %>% dplyr::filter(stringr::str_detect(mutation, mut_pos))
 
     # Text label for plotly
     df <- df %>%
+        dplyr::ungroup() %>%
         dplyr::mutate(#clade = factor(clade, levels = ord),
             text = stringr::str_c(
-                "Mutation:", clade,
+                "Mutation:", mutation,
                 "<br>frequency:", round(freq, 2),
                 "<br>percentage:", round(pct, 2),
                 "<br>count:", counts,
@@ -397,7 +416,7 @@ plot_mutations <- function(df,
     t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
 
     pp <- df %>%
-        ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
+        ggplot(aes(week_num, !!sym(var), fill = mutation, group = mutation, text = text)) +
         geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA) +
         theme_minimal(base_rect_size = 0, base_size = 12) +
         labs(x = "", y = t_2)
@@ -421,5 +440,26 @@ plot_mutations <- function(df,
     pp
 }
 
+#' Title
+#'
+#' @param mut mutation columns
+#' @param all_pos all positions
+#'
+#' @return list
+#' @export
+check_mutations <- function(mut, all_pos) {
+    mutations <- mut %>%
+        stringr::str_split(pattern = ",") %>%
+        unlist() %>%
+        .[!. == "NA"]
+
+    to_remove <- mutations %>% stringr::str_remove_all("[:alpha:]$|$-")
+
+    filt_wt <- all_pos[!all_pos %in% to_remove]
+    final_letter <- filt_wt %>% stringr::str_remove_all(".*:|\\d.*")
+    filt_wt <- stringr::str_c(filt_wt, final_letter)
+
+    res <- list(c(mutations, filt_wt))
+}
 
 
