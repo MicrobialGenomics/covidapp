@@ -13,10 +13,18 @@ plot_mutations(
 )
 }
 \arguments{
-\item{mut_pos}{}
+\item{df}{df}
+
+\item{mut_pos}{position to plot}
+
+\item{var}{counts or freq}
+
+\item{pal}{mg or RColorBrewer palette}
+
+\item{plotly}{TRUE or FALSE}
 }
 \value{
-
+plot
 }
 \description{
 Title
