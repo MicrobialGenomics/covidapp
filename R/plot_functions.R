@@ -231,6 +231,12 @@ plot_variant_by_com <- function(df, variant, var_col) {
 }
 
 
+#' Title
+#'
+#' @param df df
+#'
+#' @return plotly
+#' @export
 efforts_all <- function(df) {
     ## Edit center names
     prepro <- df %>%
@@ -327,10 +333,10 @@ plot_variant_line <- function(df, variant, var_col) {
 
 #' Title
 #'
-#' @param df
-#' @param ca
+#' @param df df
+#' @param ca CA or spain
 #'
-#' @return
+#' @return df
 #' @export
 prepro_mutations <- function(df, ca = "Spain") {
 
@@ -384,13 +390,14 @@ prepro_mutations <- function(df, ca = "Spain") {
 
 #' Title
 #'
-#' @param df
-#' @param var
-#' @param pal
-#' @param plotly
-#' @param mut_pos
+#' @param df df
+#' @param var counts or freq
+#' @param pal mg or RColorBrewer palette
+#' @param plotly TRUE or FALSE
+#' @param mut_pos position to plot
 #'
-#' @return
+#' @return plot
+#' @export
 plot_mutations <- function(df,
                           mut_pos = "ORF1b:P314",
                           var = "counts",
