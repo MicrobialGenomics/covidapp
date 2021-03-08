@@ -4,6 +4,7 @@
 
 # Load libraries ----------------------------------------------------------
 library(tidyverse)
+
 library(optparse)
 library(aws.s3)
 
@@ -134,3 +135,44 @@ readr::write_rds(
     file = str_c(opt$out_dir, "/data/MergedData_spain.rds"),
 )
 
+aaSubstitutionsString<-paste(mergedData$aaSubstitutions,mergedData$aaDeletions,sep=",")
+aaSubstitutionsArray<-(sort(unlist(as.vector(strsplit(aaSubstitutionsString,",")))))
+aaSubstitutionsArray<-aaSubstitutionsArray[!is.na(aaSubstitutionsArray)]
+aaSubstitutionsOccurences<-as.data.frame(table(aaSubstitutionsArray))
+aaSubstitutionsOccurences<-aaSubstitutionsOccurences[aaSubstitutionsOccurences$Freq>=nrow(mergedData)*0.001,]
+
+### Mutation Embedded List will contain [Protein]->[position]->[CA]->DF[,c(AA,counts)]
+mutationEmbeddedList<-list()
+
+require(tidyr)
+substrRight <- function(x, n){
+    substr(x, nchar(x)-n+1, nchar(x))
+}
+mergedData<-tidyr::unite(mergedData,Mutations,c(aaSubstitutions,aaDeletions))
+for (position in aaSubstitutionsOccurences$aaSubstitutionsArray){
+# for(position in "S:D614G"){
+    print(position)
+    myMutationString<-stringr::str_remove_all(position, "[:alpha:]$|-$")
+    myProteinString<-unlist(strsplit(position,":"))[1] ## Contains protein code
+    myPositionString<-unlist(strsplit(position,":"))[2] ## Contains mutation only
+    myRefAA<-substring(myPositionString,1,1) ## Contains Reference Amino acid
+    myMutAA<-substrRight(myPositionString, 1) ## Contains Mutation aminoacid
+    myPositionString<-readr::parse_number(myPositionString) ### Contains position only
+    subMergedData<-mergedData
+
+    subMergedData[grepl(myMutationString,subMergedData$Mutations),"AltAA"]<-substring(gsub(paste0(".*",myMutationString),"",subMergedData[grepl(myMutationString,subMergedData$Mutations),"Mutations"]),1,1)
+    subMergedData[! grepl(myMutationString,subMergedData$Mutations),"AltAA"]<-myRefAA
+
+    # for(entry in 1:nrow(subMergedData)){
+    #     subMergedData[entry,"AltAA"]<-substring(gsub(paste0(".*",myMutationString),"",subMergedData[entry,"Mutations"]),1,1)
+    # }
+    subMergedData<-subMergedData[,c("week_num","AltAA")]
+    subMergedData$RefAA<-as.factor(myRefAA)
+    subMergedData$week_num<-as.factor(subMergedData$week_num)
+    subMergedData$AltAA<-as.factor(subMergedData$AltAA)
+    if( is.null(mutationEmbeddedList[[myProteinString]])){
+        mutationEmbeddedList[[myProteinString]]<-list()
+    }
+    mutationEmbeddedList[[myProteinString]][[myPositionString]]<-list()
+    mutationEmbeddedList[[myProteinString]][[myPositionString]][["Spain"]]<-subMergedData %>% group_by(AltAA,week_num) %>% count() %>% dcast(., formula=week_num~AltAA)
+}
