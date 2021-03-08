@@ -135,10 +135,17 @@ readr::write_rds(
     file = str_c(opt$out_dir, "/data/MergedData_spain.rds"),
 )
 
-aaSubstitutionsString<-paste(mergedData$aaSubstitutions,mergedData$aaDeletions,sep=",")
-aaSubstitutionsArray<-(sort(unlist(as.vector(strsplit(aaSubstitutionsString,",")))))
+mergedData<-mergedData[mergedData$qc.overallStatus %in% c("good","mediocre"),]
+
+aaSubstitutionsArray<-c(mergedData$aaSubstitutions,mergedData$aaDeletions) ### NA elements exits
 aaSubstitutionsArray<-aaSubstitutionsArray[!is.na(aaSubstitutionsArray)]
+aaSubstitutionsString<-paste(aaSubstitutionsArray,collapse=",") ### now we have all mutations (incl.deletions) into a CS string
+aaSubstitutionsArray<-(sort(unlist(as.vector(strsplit(aaSubstitutionsString,","))))) ### We should not have NA in this array.
+
 aaSubstitutionsOccurences<-as.data.frame(table(aaSubstitutionsArray))
+### The following is a global filter. It might be better to stablish a filter on a per-week basis
+
+
 aaSubstitutionsOccurences<-aaSubstitutionsOccurences[aaSubstitutionsOccurences$Freq>=nrow(mergedData)*0.001,]
 
 ### Mutation Embedded List will contain [Protein]->[position]->[CA]->DF[,c(AA,counts)]
@@ -148,7 +155,8 @@ require(tidyr)
 substrRight <- function(x, n){
     substr(x, nchar(x)-n+1, nchar(x))
 }
-mergedData<-tidyr::unite(mergedData,Mutations,c(aaSubstitutions,aaDeletions))
+mergedData<-tidyr::unite(mergedData,Mutations,c(aaSubstitutions,aaDeletions),sep=",",na.rm=T)
+mergedData$division<-as.factor(mergedData$division)
 for (position in aaSubstitutionsOccurences$aaSubstitutionsArray){
 # for(position in "S:D614G"){
     print(position)
@@ -159,14 +167,9 @@ for (position in aaSubstitutionsOccurences$aaSubstitutionsArray){
     myMutAA<-substrRight(myPositionString, 1) ## Contains Mutation aminoacid
     myPositionString<-readr::parse_number(myPositionString) ### Contains position only
     subMergedData<-mergedData
-
     subMergedData[grepl(myMutationString,subMergedData$Mutations),"AltAA"]<-substring(gsub(paste0(".*",myMutationString),"",subMergedData[grepl(myMutationString,subMergedData$Mutations),"Mutations"]),1,1)
     subMergedData[! grepl(myMutationString,subMergedData$Mutations),"AltAA"]<-myRefAA
-
-    # for(entry in 1:nrow(subMergedData)){
-    #     subMergedData[entry,"AltAA"]<-substring(gsub(paste0(".*",myMutationString),"",subMergedData[entry,"Mutations"]),1,1)
-    # }
-    subMergedData<-subMergedData[,c("week_num","AltAA")]
+    subMergedData<-subMergedData[,c("week_num","AltAA","division")]
     subMergedData$RefAA<-as.factor(myRefAA)
     subMergedData$week_num<-as.factor(subMergedData$week_num)
     subMergedData$AltAA<-as.factor(subMergedData$AltAA)
@@ -175,4 +178,13 @@ for (position in aaSubstitutionsOccurences$aaSubstitutionsArray){
     }
     mutationEmbeddedList[[myProteinString]][[myPositionString]]<-list()
     mutationEmbeddedList[[myProteinString]][[myPositionString]][["Spain"]]<-subMergedData %>% group_by(AltAA,week_num) %>% count() %>% dcast(., formula=week_num~AltAA)
+    for (mydivision in levels(subMergedData$division)){
+        if(mydivision=="Spain"){next}
+        mutationEmbeddedList[[myProteinString]][[myPositionString]][[mydivision]]<-subMergedData %>%  filter(division== mydivision) %>% group_by(AltAA,week_num) %>% count() %>% dcast(., formula=week_num~AltAA)
+    }
 }
+
+readr::write_rds(
+    mutationEmbeddedList,
+    file = str_c(opt$out_dir, "/data/MutationEmbeddedData.rds"),
+)
