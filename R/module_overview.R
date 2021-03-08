@@ -103,24 +103,16 @@ overview_module_server <- function(id) {
             dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
             dplyr::filter(!acom_name == "Spain")
 
-        ## Mutation Position UI
-        mutations <- df %>%
-            dplyr::select(aaSubstitutions, aaDeletions) %>%
-            tidyr::unite(mutation, sep = ",", remove = TRUE) %>%
-            tidyr::separate_rows(mutation, sep = ",") %>%
-            dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
-            dplyr::filter(!mutation == "NA") %>%
-            dplyr::count(mutation, sort = TRUE) %>%
-            #dplyr::filter(n > 25) %>%
-            dplyr::mutate(pos = stringr::str_sub(mutation, end = -2))
+        mt <- readr::read_rds("data/MutationEmbeddedData.rds")
+        mt_pos <- extract_mutations(mt)
 
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(
                 inputId = session$ns("mutation_positions"),
                 label = shiny::h5("Pick Mutation Position:"),
-                choices = unique(mutations$pos),
-                selected = unique(mutations$pos)[1],
+                choices = mt_pos,
+                selected = "E:71",
                 multiple = FALSE,
                 options = list(`live-search` = TRUE)
             )
@@ -135,9 +127,8 @@ overview_module_server <- function(id) {
                     forcats::fct_infreq() %>% levels() %>% .[1:14]
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
-                clades <- mutations %>%
-                    dplyr::filter(stringr::str_detect(mutation, input$mutation_positions)) %>%
-                    dplyr::pull(1)
+                clades <- mt %>%
+                    option_mutation(input$mutation_positions)
             }
         }) %>%
             shiny::bindCache(input$var_annot, input$mutation_positions)
@@ -172,32 +163,43 @@ overview_module_server <- function(id) {
 
         # Titles ------------------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
-            annot <- dplyr::case_when(input$var_annot == "NCClade" ~ "Nextclade variants",
-                                      input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
-                                      TRUE ~ "Mutatations")
+            annot <- dplyr::case_when(
+                input$var_annot == "NCClade" ~ "Nextclade variants",
+                input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                TRUE ~ "Mutatations"
+            )
             glue::glue("Average weekly {annot} {input$stack_p1} in {input$region[[1]]}")
         })
+
         output$title_1_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
+
         output$title_2_1 <- shiny::renderText({
-            annot <- dplyr::case_when(input$var_annot == "NCClade" ~ "Nextclade variants",
-                                      input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
-                                      TRUE ~ "Mutatations")
+            annot <- dplyr::case_when(
+                input$var_annot == "NCClade" ~ "Nextclade variants",
+                input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                TRUE ~ "Mutatations"
+            )
             glue::glue("Average weekly {annot} {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
+
         output$title_2_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
+
         output$title_3_1 <- shiny::renderText({
             glue::glue("Average weekly {input$variant} prevalece in {input$region[[1]]}")
         })
+
         output$title_3_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
+
         output$title_4_1 <- shiny::renderText({
             glue::glue("Average weekly {input$variant} prevalece in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
+
         output$title_4_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
@@ -206,12 +208,15 @@ overview_module_server <- function(id) {
         # Plots -------------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$region, input$var_annot, input$stack_p1)
+            shiny::req(exists("df"), input$region, input$var_annot, input$stack_p1, exists("mt"))
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
-                pp <- df %>%
-                    prepro_mutations(ca = input$region[[1]]) %>%
-                    plot_mutations(mut_pos = input$mutation_positions, var = input$stack_p1)
+                pp <- mt %>%
+                    plot_mutations_2(
+                        region = input$region[[1]],
+                        mut_pos = input$mutation_positions,
+                        var = input$stack_p1
+                    )
             } else {
                 pp <- df %>%
                     prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
@@ -227,9 +232,12 @@ overview_module_server <- function(id) {
 
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
-                pp <- df %>%
-                    prepro_mutations(ca = stringr::str_remove_all(input$region[[2]], ' $')) %>%
-                    plot_mutations(mut_pos = input$mutation_positions, var = input$stack_p1)
+                pp <- mt %>%
+                    plot_mutations_2(
+                        region = stringr::str_remove_all(input$region[[2]], ' $'),
+                        mut_pos = input$mutation_positions,
+                        var = input$stack_p1
+                    )
             } else {
                 pp <- df %>%
                     prepro_variants(
@@ -249,17 +257,24 @@ overview_module_server <- function(id) {
                        input$region,
                        input$variant)
 
-            if (input$region[[1]] == "Spain") {
-                pp <- df %>%
-                    plot_variant_line(variant = input$variant,
-                                      var_col = input$var_annot)
+            if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
+                pp <- plot_mutation_line(inp_list = mt,
+                                         region = input$region[[1]],
+                                         mut_pos = input$mutation_positions,
+                                         mut = input$variant)
             } else {
-                pp <- df %>%
-                    dplyr::filter(acom_name == input$region[[1]]) %>%
-                    plot_variant_line(variant = input$variant,
-                                      var_col = input$var_annot)
+                if (input$region[[1]] == "Spain") {
+                    pp <- df %>%
+                        plot_variant_line(variant = input$variant,
+                                          var_col = input$var_annot)
+                } else {
+                    pp <- df %>%
+                        dplyr::filter(acom_name == input$region[[1]]) %>%
+                        plot_variant_line(variant = input$variant,
+                                          var_col = input$var_annot)
+                }
             }
-
             pp
         }) %>%
             shiny::bindCache(input$var_annot, input$region, input$variant)
@@ -272,20 +287,32 @@ overview_module_server <- function(id) {
                        input$region,
                        input$variant)
 
-            if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
-                pp <- df %>%
-                    plot_variant_line(variant = input$variant,
-                                      var_col = input$var_annot)
+            if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
+                pp <- plot_mutation_line(
+                    inp_list = mt,
+                    region = stringr::str_remove_all(input$region[[2]], ' $'),
+                    mut_pos = input$mutation_positions,
+                    mut = input$variant
+                )
             } else {
-                pp <- df %>%
-                    dplyr::filter(acom_name == stringr::str_remove_all(input$region[[2]], ' $' )) %>%
-                    plot_variant_line(variant = input$variant,
-                                      var_col = input$var_annot)
+                if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
+                    pp <- df %>%
+                        plot_variant_line(variant = input$variant,
+                                          var_col = input$var_annot)
+                } else {
+                    pp <- df %>%
+                        dplyr::filter(acom_name == stringr::str_remove_all(input$region[[2]], ' $' )) %>%
+                        plot_variant_line(variant = input$variant,
+                                          var_col = input$var_annot)
+                }
             }
-
             pp
         }) %>%
-            shiny::bindCache(input$var_annot, input$region, input$variant)
+            shiny::bindCache(input$var_annot,
+                             input$region,
+                             input$variant,
+                             input$mutation_positions)
     })
 
 }
