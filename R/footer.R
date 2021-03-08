@@ -384,7 +384,7 @@ footer <- shiny::div(
                 )
             ),
             shiny::column(
-                width = 2,
+                width = 3,
                 align = "center",
                 shiny::h2("Share us", style = "font-family: 'Brush Script MT';"),
                 shiny::br(),
@@ -420,7 +420,7 @@ footer <- shiny::div(
             ),
             ## Affiliation
             shiny::column(
-                width = 2,
+                width = 3,
                 align = "center",
                 shiny::h2("Affiliations", style = "font-family: 'Brush Script MT';"),
                 shiny::br(),
@@ -440,43 +440,52 @@ footer <- shiny::div(
                 )
             ),
 
-            ## Developed
-            shiny::column(
-                width = 2,
+            # ## Developed
+            # shiny::column(
+            #     width = 2,
+            #     align = "center",
+            #     shiny::h2("Developed by", style = "font-family: 'Brush Script MT';"),
+            #     shiny::fixedRow(
+            #         # MNJ
+            #         shiny::column(
+            #             width = 6,
+            #             align = "center",
+            #             shiny::tags$a(
+            #                 href = 'https://www.irsicaixa.es/ca/node/2300',
+            #                 shiny::img(
+            #                     src =  "images/mnoguera.png",
+            #                     height = '60px',
+            #                     width = '60px',
+            #                     style = "border-radius: 50%;"
+            #                 )
+            #             ),
+            #             shiny::h5("Marc Noguera i Julian, PhD")
+            #         ),
+            #         # FCM
+            #         shiny::column(
+            #             width = 6,
+            #             align = "center",
+            #             shiny::tags$a(
+            #                 href = 'https://www.irsicaixa.es/ca/investigadors/francesc-catala-moll',
+            #                 shiny::img(
+            #                     src =  "images/fcatala.jpg",
+            #                     height = '60px',
+            #                     width = '60px',
+            #                     style = "border-radius: 50%;"
+            #                 )
+            #             ),
+            #             shiny::h5("Francesc Català Moll, PhD")
+            #         )
+            #     )
+            # )
+        ),
+        shiny::br(),
+        shiny::tags$a(
+            href = "",
+            shiny::h6(
+                "Develped by Francesc Català Moll and Marc Noguera i Julian",
                 align = "center",
-                shiny::h2("Developed by", style = "font-family: 'Brush Script MT';"),
-                shiny::fixedRow(
-                    # MNJ
-                    shiny::column(
-                        width = 6,
-                        align = "center",
-                        shiny::tags$a(
-                            href = 'https://www.irsicaixa.es/ca/node/2300',
-                            shiny::img(
-                                src =  "images/mnoguera.png",
-                                height = '60px',
-                                width = '60px',
-                                style = "border-radius: 50%;"
-                            )
-                        ),
-                        shiny::h5("Marc Noguera i Julian, PhD")
-                    ),
-                    # FCM
-                    shiny::column(
-                        width = 6,
-                        align = "center",
-                        shiny::tags$a(
-                            href = 'https://www.irsicaixa.es/ca/investigadors/francesc-catala-moll',
-                            shiny::img(
-                                src =  "images/fcatala.jpg",
-                                height = '60px',
-                                width = '60px',
-                                style = "border-radius: 50%;"
-                            )
-                        ),
-                        shiny::h5("Francesc Català Moll, PhD")
-                    )
-                )
+                style = "color: darkgray;"
             )
         ),
         shiny::tags$a(
