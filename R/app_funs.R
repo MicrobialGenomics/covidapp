@@ -4,7 +4,14 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
-            title = "covidApp",
+            title = div(
+                img(
+                    src = "images/covidtag.png",
+                    height = 60,
+                    width = 80,
+                    style = "margin:-20px 5px"
+                )
+            ),
             theme = shinythemes::shinytheme("flatly"),
             fluid = TRUE,
             collapsible = TRUE,

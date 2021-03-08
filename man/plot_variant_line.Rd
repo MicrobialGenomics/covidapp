@@ -4,10 +4,12 @@
 \alias{plot_variant_line}
 \title{Plot variant by C.A.}
 \usage{
-plot_variant_line(df, variant, var_col)
+plot_variant_line(df, mt, variant, var_col)
 }
 \arguments{
 \item{df}{tibble}
+
+\item{mt}{mutation count list}
 
 \item{variant}{NCClade to plot}
 

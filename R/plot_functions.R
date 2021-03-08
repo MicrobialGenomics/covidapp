@@ -268,21 +268,13 @@ efforts_all <- function(df) {
 #' Plot variant by C.A.
 #'
 #' @param df tibble
+#' @param mt mutation count list
 #' @param variant NCClade to plot
 #' @param var_col column name of plotting variant
 #'
 #' @return plotly
 #' @export
-plot_variant_line <- function(df, variant, var_col) {
-
-    if (var_col == "mutation") {
-        df <- df %>%
-            tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE) %>%
-            tidyr::separate_rows(mutation, sep = ",") %>%
-            dplyr::filter(!stringr::str_detect(mutation, "X$")) %>%
-            dplyr::filter(!mutation == "NA")
-    }
-
+plot_variant_line <- function(df, mt, variant, var_col) {
     # Preparing data
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
@@ -469,4 +461,182 @@ check_mutations <- function(mut, all_pos) {
     res <- list(c(mutations, filt_wt))
 }
 
+
+#' Title
+#'
+#' @param df df
+#' @param region C.A or Spain
+#' @param var counts or freq
+#' @param pal mg or RColorBrewer palette
+#' @param plotly TRUE or FALSE
+#' @param mut_pos position to plot
+#'
+#' @return plot
+#' @export
+plot_mutations_2 <- function(inp_list,
+                             region = "Spain",
+                             mut_pos = "S:1251",
+                             var = "counts",
+                             pal = "mg",
+                             plotly = TRUE) {
+
+    gene <- stringr::str_remove_all(mut_pos, ":.*")
+    pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
+
+    ## Region names conversion
+    if (region == "Principado de Asturias") { reg = "Asturias"
+    } else if (region == "Andalucía") { reg = "Andalusia"
+    } else if (region == "Aragón") { reg = "Aragon"
+    } else if (region == "Comunidad de Madrid") { reg = "Madrid"
+    } else if (region == "Castilla-La Mancha") { reg = "Castilla la Mancha"
+    } else if (region == "País Vasco") { reg = "Basque Country"
+    } else if (region == "Castilla y León") { reg = "Castilla y Leon"
+    } else if (region == "Canarias") { reg = "Canary Islands"
+    } else if (region == "Illes Balears") { reg = "Balear Islands"
+    } else if (region == "Región de Murcia") { reg = "Murcia"
+    } else if (region == "Ciudad Autónoma de Melilla") { reg = "Melilla"
+    } else if (region == "Ciudad Autónoma de Ceuta") { reg = "Ceuta"
+    } else if (region == "Comunidad Foral de Navarra") { reg = "Navarra"
+    } else { reg = region }
+
+    df <- inp_list[[gene]][[pos]][[reg]] %>%
+        tidyr::pivot_longer(cols = 2:3) %>%
+        tidyr::replace_na(list(value = 0)) %>%
+        dplyr::mutate(
+            week = stringr::str_remove(week_num, ".*-"),
+            year = stringr::str_remove(week_num, "-.*"),
+            week = dplyr::if_else(week == "53", "52", week),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+        ) %>%
+        dplyr::group_by(week_num) %>%
+        dplyr::summarise(
+            mutation = name,
+            counts = value,
+            total = sum(value),
+            freq = value / total
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(#clade = factor(clade, levels = ord),
+            text = stringr::str_c(
+                "Mutation:", mutation,
+                "<br>frequency:", round(freq, 2),
+                "<br>count:", counts,
+                "<br>total:", total,
+                sep = " "
+            ))
+
+
+    t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
+    t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
+
+    pp <- df %>%
+        ggplot(aes(week_num, !!sym(var), fill = mutation, group = mutation, text = text)) +
+        geom_bar(stat = "identity", position = "stack", alpha = 0.5, colour = NA) +
+        theme_minimal(base_rect_size = 0, base_size = 12) +
+        labs(x = "", y = t_2)
+
+    if (var == "freq") {
+        pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
+    }
+
+    pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
+             "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+    pp <- pp + scale_fill_manual(values = rev(pal))
+
+    if (isTRUE(plotly)) {
+        pp <- plotly::ggplotly(pp, tooltip = "text") %>%
+            plotly::layout(
+                hovermode = 'closest',
+                legend = list(orientation = 'h', y = -0.2)
+            ) %>%
+            plotly::config(displaylogo = FALSE)
+    }
+    pp
+}
+
+#' Title
+#'
+#' @param df
+#' @param mt
+#' @param variant
+#' @param var_col
+#'
+#' @return
+#' @export
+plot_mutation_line <- function(inp_list,
+                               region = "Spain",
+                               mut_pos = "S:1251",
+                               mut = "V") {
+
+    gene <- stringr::str_remove_all(mut_pos, ":.*")
+    pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
+
+    ## Region names conversion
+    if (region == "Principado de Asturias") { reg = "Asturias"
+    } else if (region == "Andalucía") { reg = "Andalusia"
+    } else if (region == "Aragón") { reg = "Aragon"
+    } else if (region == "Comunidad de Madrid") { reg = "Madrid"
+    } else if (region == "Castilla-La Mancha") { reg = "Castilla la Mancha"
+    } else if (region == "País Vasco") { reg = "Basque Country"
+    } else if (region == "Castilla y León") { reg = "Castilla y Leon"
+    } else if (region == "Canarias") { reg = "Canary Islands"
+    } else if (region == "Illes Balears") { reg = "Balear Islands"
+    } else if (region == "Región de Murcia") { reg = "Murcia"
+    } else if (region == "Ciudad Autónoma de Melilla") { reg = "Melilla"
+    } else if (region == "Ciudad Autónoma de Ceuta") { reg = "Ceuta"
+    } else if (region == "Comunidad Foral de Navarra") { reg = "Navarra"
+    } else { reg = region }
+
+    na_replace = list()
+    na_replace[[mut]] <- 0
+
+    prepro <- inp_list[[gene]][[pos]][[reg]] %>%
+        tidyr::pivot_longer(cols = 2:3) %>%
+        tidyr::replace_na(list(value = 0)) %>%
+        dplyr::mutate(
+            week = stringr::str_remove(week_num, ".*-"),
+            year = stringr::str_remove(week_num, "-.*"),
+            week = dplyr::if_else(week == "53", "52", week),
+            week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+        ) %>%
+        dplyr::group_by(week_num) %>%
+        dplyr::summarise(
+            mutation = name,
+            counts = value,
+            total = sum(value),
+            freq = value / total
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(#clade = factor(clade, levels = ord),
+            text = stringr::str_c(
+                "Mutation:", mutation,
+                "<br>frequency:", round(freq, 2),
+                "<br>count:", counts,
+                "<br>total:", total,
+                sep = " "
+            )) %>%
+        dplyr::filter(mutation == mut)
+
+    # Plot data
+    pp <- prepro %>%
+        ggplot(aes(week_num, freq, colour = mutation, fill = mutation)) +
+        stat_smooth(
+            method = "loess",
+            formula = "y ~ x",
+            size = 0.8,
+            alpha = 0.5,
+            lty = 0
+        ) +
+        geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
+        scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+        scale_fill_manual(values = "#FEE08B") +
+        scale_colour_manual(values = "#F46D43") +
+        labs(x = "", y = "Frequency") +
+        theme_minimal(base_rect_size = 0) +
+        theme(legend.position = "none")
+
+    # Convert to plotly
+    plotly::ggplotly(pp, tooltip = c("text")) %>%
+        plotly::config(displaylogo = FALSE)
+}
 
