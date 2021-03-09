@@ -3,6 +3,8 @@
 export("%>%")
 export(":=")
 export(.data)
+export(acknowledgements_module_server)
+export(acknowledgements_module_ui)
 export(as_label)
 export(as_name)
 export(check_mutations)
