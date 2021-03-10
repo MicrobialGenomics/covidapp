@@ -14,31 +14,18 @@ per_ca_module_ui <- function(id) {
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
             shiny::uiOutput(outputId = ns("option_ca")),
-
             shinyWidgets::radioGroupButtons(
                 inputId = ns("stack_p1"),
                 label = shiny::h5("Pick y-axis transfomation:"),
                 choices = c("stack" = "counts", "fill" = "freq"),
+                status = "default",
+                selected = "counts",
+                justified = TRUE,
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
                     no = tags$i(class = "fa fa-square-o")
-                ),
-                status = "default",
-                selected = "counts",
-                justified = TRUE
+                )
             ),
-            # shinyWidgets::radioGroupButtons(
-            #     inputId = ns("bar_p1"),
-            #     label = shiny::h5("Pick plot type:"),
-            #     choices = c("bar", "density"),
-            #     checkIcon = list(
-            #         yes = tags$i(class = "fa fa-check-square"),
-            #         no = tags$i(class = "fa fa-square-o")
-            #     ),
-            #     status = "default",
-            #     selected = "bar",
-            #     justified = TRUE
-            # ),
             shiny::h5("Pick palette:"),
             shinyWidgets::sliderTextInput(
                 inputId = ns("pal_p1"),
@@ -55,13 +42,13 @@ per_ca_module_ui <- function(id) {
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
                 choices = c("NCClade" = "NCClade", "Pangolin" = "pangolin_lineage"),
+                status = "default",
+                selected = "NCClade",
+                justified = TRUE,
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
                     no = tags$i(class = "fa fa-square-o")
-                ),
-                status = "default",
-                selected = "NCClade",
-                justified = TRUE
+                )
             )
         ),
 
@@ -82,9 +69,11 @@ per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         df <- readr::read_rds("data/MergedData_spain.rds") %>%
-            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"))
+            dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
+            dplyr::filter(!acom_name == "Spain")
 
         com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
+
 
         output$option_ca <- shiny::renderUI({
             shinyWidgets::pickerInput(
