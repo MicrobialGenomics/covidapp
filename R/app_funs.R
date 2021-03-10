@@ -13,15 +13,15 @@ ui <- function() {
                 ),
                 shiny::h6(
                     "Enabled by data from",
-                    style = "right: 175px; top: 15px; position: absolute;"
+                    style = "right: 160px; top: 15px; position: absolute;"
                 ),
                 shiny::fixedRow(
                     shiny::tags$a(
                         href = "https://www.gisaid.org",
                         shiny::img(
                             src = "images/gisaid_2.png",
-                            height = 25,
-                            width = 50
+                            height = 20,
+                            width = 45
                         )
                     ),
                     shiny::tags$a(
@@ -36,9 +36,10 @@ ui <- function() {
                     shiny::tags$a(
                         href = "https://twitter.com/fcatalamoll",
                         shiny::img(
-                            src = "images/twitter.png",
-                            height = 15,
-                            width = 30
+                            src = "images/twitter2.png",
+                            height = 20,
+                            width = 20,
+                            style = "border-radius: 50%;"
                         )
                     ),
                     style = "right: 75px; top: 20px; position: absolute;"
