@@ -9,7 +9,7 @@ ADD ./covidapp /srv/shiny-server
 RUN chmod -R +r /srv/shiny-server
 
 # Install covidapp and covidseq
-RUN R -e "devtools::install('/srv/shiny-server/covidapp')"
+RUN R -e "devtools::install('/srv/shiny-server')"
 
 # Expose port
 EXPOSE 3838
