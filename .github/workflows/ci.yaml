@@ -10,19 +10,6 @@ jobs:
   docker_push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout covidseq dev breanch
-        uses: actions/checkout@v2
-        with:
-          repository: MicrobialGenomics/covidseq
-          ref: dev
-          path: covidseq_dev
-
-      - name: Checkout covidseq dev breanch
-        uses: actions/checkout@v2
-        with:
-          repository: MicrobialGenomics/covidseq
-          ref: main
-          path: covidseq
 
       - name: Checkout covidapp main breanch
         uses: actions/checkout@v2
