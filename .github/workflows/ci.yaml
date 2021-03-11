@@ -10,7 +10,6 @@ jobs:
   docker_push:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout covidapp main breanch
         uses: actions/checkout@v2
         with:
