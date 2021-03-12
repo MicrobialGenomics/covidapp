@@ -67,15 +67,16 @@ plot_vairants <- function(df,
 
     # Text label for plotly
     df <- df %>%
-        dplyr::mutate(#clade = factor(clade, levels = ord),
-                      text = stringr::str_c(
-                          "clade:", clade,
-                          "<br>frequency:", freq,
-                          "<br>percentage:", pct,
-                          "<br>count:", counts,
-                          "<br>total:", sum,
-                          sep = " "
-                      ))
+        dplyr::mutate(
+            text = stringr::str_c(
+                "Clade:", clade,
+                "<br>Frequency:", round(freq, 2),
+                #"<br>percentage:", round(pct, 2),
+                "<br>Counts:", counts,
+                "<br>Total counts:", sum,
+                sep = " "
+            )
+        )
 
     # Define plot class
     if (type == "density") {
@@ -484,20 +485,7 @@ plot_mutations_2 <- function(inp_list,
     pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
 
     ## Region names conversion
-    if (region == "Principado de Asturias") { reg = "Asturias"
-    } else if (region == "Andalucía") { reg = "Andalusia"
-    } else if (region == "Aragón") { reg = "Aragon"
-    } else if (region == "Comunidad de Madrid") { reg = "Madrid"
-    } else if (region == "Castilla-La Mancha") { reg = "Castilla la Mancha"
-    } else if (region == "País Vasco") { reg = "Basque Country"
-    } else if (region == "Castilla y León") { reg = "Castilla y Leon"
-    } else if (region == "Canarias") { reg = "Canary Islands"
-    } else if (region == "Illes Balears") { reg = "Balear Islands"
-    } else if (region == "Región de Murcia") { reg = "Murcia"
-    } else if (region == "Ciudad Autónoma de Melilla") { reg = "Melilla"
-    } else if (region == "Ciudad Autónoma de Ceuta") { reg = "Ceuta"
-    } else if (region == "Comunidad Foral de Navarra") { reg = "Navarra"
-    } else { reg = region }
+    if (region == "Catalunya") { reg = "Cataluña" } else { reg = region }
 
     df <- inp_list[[gene]][[pos]][[reg]] %>%
         tidyr::pivot_longer(cols = 2:3) %>%
@@ -516,14 +504,15 @@ plot_mutations_2 <- function(inp_list,
             freq = value / total
         ) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(#clade = factor(clade, levels = ord),
+        dplyr::mutate(
             text = stringr::str_c(
                 "Mutation:", mutation,
-                "<br>frequency:", round(freq, 2),
-                "<br>count:", counts,
-                "<br>total:", total,
+                "<br>Frequency:", round(freq, 2),
+                "<br>Counts:", counts,
+                "<br>Total counts:", total,
                 sep = " "
-            ))
+            )
+        )
 
 
     t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
@@ -572,20 +561,7 @@ plot_mutation_line <- function(inp_list,
     pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
 
     ## Region names conversion
-    if (region == "Principado de Asturias") { reg = "Asturias"
-    } else if (region == "Andalucía") { reg = "Andalusia"
-    } else if (region == "Aragón") { reg = "Aragon"
-    } else if (region == "Comunidad de Madrid") { reg = "Madrid"
-    } else if (region == "Castilla-La Mancha") { reg = "Castilla la Mancha"
-    } else if (region == "País Vasco") { reg = "Basque Country"
-    } else if (region == "Castilla y León") { reg = "Castilla y Leon"
-    } else if (region == "Canarias") { reg = "Canary Islands"
-    } else if (region == "Illes Balears") { reg = "Balear Islands"
-    } else if (region == "Región de Murcia") { reg = "Murcia"
-    } else if (region == "Ciudad Autónoma de Melilla") { reg = "Melilla"
-    } else if (region == "Ciudad Autónoma de Ceuta") { reg = "Ceuta"
-    } else if (region == "Comunidad Foral de Navarra") { reg = "Navarra"
-    } else { reg = region }
+    if (region == "Catalunya") { reg = "Cataluña" } else { reg = region }
 
     na_replace = list()
     na_replace[[mut]] <- 0
@@ -607,14 +583,6 @@ plot_mutation_line <- function(inp_list,
             freq = value / total
         ) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(#clade = factor(clade, levels = ord),
-            text = stringr::str_c(
-                "Mutation:", mutation,
-                "<br>frequency:", round(freq, 2),
-                "<br>count:", counts,
-                "<br>total:", total,
-                sep = " "
-            )) %>%
         dplyr::filter(mutation == mut)
 
     # Plot data
@@ -636,7 +604,7 @@ plot_mutation_line <- function(inp_list,
         theme(legend.position = "none")
 
     # Convert to plotly
-    plotly::ggplotly(pp, tooltip = c("text")) %>%
+    plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
 }
 
