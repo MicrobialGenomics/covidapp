@@ -17,7 +17,14 @@ map_module_ui <- function(id) {
             id = "controls", class = "panel panel-default",
             top = 180, left = 55, width = 300, fixed = TRUE,
             draggable = TRUE, height = "auto",
-            shiny::span(shiny::tags$i(shiny::h6("Data from GSAID Initiative. Note, that ")), style="color:#045a8d"),
+            shiny::span(shiny::tags$i(
+                shiny::h6(
+                    "Data from GISAID Initiative. Note, that it is important
+                        not to assume that shown data are necessarily
+                        representative of the all region due to a potential non
+                        uniform sampling"
+                )
+            ), style = "color:#045a8d; text-align: justify;"),
             shiny::br(),
             shiny::h4(shiny::textOutput(outputId = ns("acum_seq")), align = "right"),
             shiny::h4(shiny::textOutput(outputId = ns("week_seq")), align = "right"),
