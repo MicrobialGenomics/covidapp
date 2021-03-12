@@ -43,7 +43,7 @@ covidapp.Rproj
 data/*.geojson
 data/*MergedData_spain.rds
 data/*MutationEmbeddedData.rds
-
+db/
 
 
 
