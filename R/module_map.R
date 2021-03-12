@@ -17,7 +17,7 @@ map_module_ui <- function(id) {
             id = "controls", class = "panel panel-default",
             top = 180, left = 55, width = 300, fixed = TRUE,
             draggable = TRUE, height = "auto",
-            shiny::span(shiny::tags$i(shiny::h6("Data from GSAID Initiative.")), style="color:#045a8d"),
+            shiny::span(shiny::tags$i(shiny::h6("Data from GSAID Initiative. Note, that ")), style="color:#045a8d"),
             shiny::br(),
             shiny::h4(shiny::textOutput(outputId = ns("acum_seq")), align = "right"),
             shiny::h4(shiny::textOutput(outputId = ns("week_seq")), align = "right"),
@@ -70,6 +70,7 @@ map_module_server <- function(id) {
         ## Load data
         df <- readr::read_rds("data/MergedData_spain.rds") %>%
             tidyr::drop_na(week_num) %>%
+            dplyr::filter(acom_name != "Spain") %>%
             dplyr::mutate(
                 acom_name = factor(
                     acom_name,
@@ -93,7 +94,7 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(input$date)
 
-        # Filter by date
+        ## Filter by date
         f_df <- shiny::reactive({
             shiny::req(input$plot_date)
             format_date <- lubridate::parse_date_time(input$plot_date, 'd b y')
@@ -101,7 +102,7 @@ map_module_server <- function(id) {
                 dplyr::filter(date <= format_date)
         })
 
-        ## Map plot -------
+        ## Base map
         map <- ca_spain_gj
         map$cases <- df %>%
             dplyr::count(acom_name, .drop = FALSE) %>%
@@ -140,8 +141,8 @@ map_module_server <- function(id) {
 
         output$mymap <- leaflet::renderLeaflet({ base_map })
 
+        ## Map reactivity
         observeEvent(c(input$plot_date, input$norm),  {
-
             map$cases <- f_df() %>%
                 dplyr::count(acom_name, .drop = FALSE) %>%
                 dplyr::left_join(
@@ -151,13 +152,16 @@ map_module_server <- function(id) {
                 ) %>%
                 dplyr::pull(n)
 
+            map$norm_cases <- map$cases / ca_inhabitants * 1e5
+            map$norm_cases[is.na(map$norm_cases)] <- 0
+
             p <- map$acom_name %>%
                 purrr::set_names() %>%
                 purrr::map(function(x) {
                     if (x == "Territorio no asociado a ninguna autonomía") {
                         popup <- ggplot()
                     } else {
-                        popup <- df %>%
+                        popup <- f_df() %>%
                             prepro_variants(ca = x) %>%
                             plot_vairants(type = "bar",
                                           var = "counts",
@@ -206,13 +210,15 @@ map_module_server <- function(id) {
             }
         })
 
-        ## Absolute panel ------------------------------------------------------
+        ## Absolute panel reactivity
+        # Total sequences
         output$acum_seq <- shiny::renderText({
             acum_seq <- prettyNum(nrow(f_df()), big.mark = ",")
             glue::glue("{acum_seq} Total Sequences")
         }) %>%
             shiny::bindCache(f_df())
 
+        # New sequences selected date
         output$week_seq <- shiny::renderText({
             week_seq <- f_df() %>%
                 dplyr::filter(date == max(date)) %>%
@@ -223,12 +229,14 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(f_df())
 
+        # Selected date
         output$sel_week <- shiny::renderText({
             sel_week <- input$plot_date
             sel_week
         }) %>%
             shiny::bindCache(input$plot_date)
 
+        # Affected C.A. counts
         output$count_ca <- shiny::renderText({
             count_ca <- f_df() %>%
                 dplyr::count(acom_name) %>%
@@ -239,9 +247,11 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(f_df())
 
+        # Plot counts
         output$plot_counts <- shiny::renderPlot({ efforts_all(f_df())$pp_counts }) %>%
             shiny::bindCache(f_df())
 
+        # Plot commutative counts
         output$plot_cumsum <- shiny::renderPlot({ efforts_all(f_df())$pp_cumsum }) %>%
             shiny::bindCache(f_df())
     })
