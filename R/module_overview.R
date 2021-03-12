@@ -8,7 +8,65 @@
 overview_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
-        headerPanel = shiny::headerPanel(""),
+        headerPanel = shiny::headerPanel(
+            title = shiny::fluidPage(
+                shiny::fixedRow(
+                    shiny::h1("Overview",
+                              align = "center",
+                              style = "font-family: 'Brush Script MT';"),
+                ),
+                shiny::fixedRow(
+                    shiny::h5(
+                        "This section allows a comparative exploration of the
+                        evolution of the different variants of SARS-CoV-2 (CoV-19)
+                        between autonomous communities. Specifically, the graphs
+                        at the top give a more general view showing the total
+                        number of sequences or the frequency (stack or fill
+                        option respectively) of each variant/mutation over time
+                        in intervals of weeks. On the other hand, the bottom
+                        graphs show the evolution of the frequency of a single
+                        variant/mutation selected using the “Pick
+                        Variant/Mutation” panel.",
+                        style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    )
+                ),
+                shiny::fixedRow(
+                    shiny::h5(
+                        "For a correct interpretation it is necessary to take into account:",
+                        style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    )
+                ),
+                shiny::fixedRow(
+                    shiny::h5(
+                        "•	Sampling may not be uniform within the different
+                        autonomous communities. Therefore, it is important not
+                        to assume that the counts/frequencies shown are
+                        necessarily representative of the region.",
+                        style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    ),
+                    shiny::h5(
+                        "• The charts used are based on the sample collection date,
+                        and sequencing or GISAID submission date. As a result,
+                        this date may differ from when the sample was processed
+                        and sequenced, and when the data is released to the public.",
+                        style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    ),
+                    shiny::h5(
+                        "• In relation with the last consideration, last data
+                        pints often has incomplete data and may change as more
+                        sequences come in.",
+                        style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    ),
+                    shiny::h5(
+                        "•	The mutations that define SARS-CoV-2 (CoV-19) lineages
+                        are updated every few days. Therefore, displayed data is
+                        susceptible to change over time.",
+                        style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
+                    )
+                ),
+                shiny::br(),
+            )
+        ),
 
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
