@@ -483,7 +483,7 @@ footer <- shiny::div(
         shiny::tags$a(
             href = "",
             shiny::h6(
-                "Develped by Francesc Català Moll and Marc Noguera i Julian",
+                "Developed by Francesc Català Moll and Marc Noguera i Julian",
                 align = "center",
                 style = "color: darkgray;"
             )
