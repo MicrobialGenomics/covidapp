@@ -7,10 +7,16 @@
 plot_mutation_line(inp_list, region = "Spain", mut_pos = "S:1251", mut = "V")
 }
 \arguments{
-\item{var_col}{}
+\item{inp_list}{mutation list}
+
+\item{region}{region}
+
+\item{mut_pos}{muatatio pos}
+
+\item{mut}{variant}
 }
 \value{
-
+plotly
 }
 \description{
 Title
