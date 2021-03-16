@@ -545,12 +545,12 @@ plot_mutations_2 <- function(inp_list,
 
 #' Title
 #'
-#' @param df
-#' @param mt
-#' @param variant
-#' @param var_col
+#' @param inp_list mutation list
+#' @param region region
+#' @param mut_pos muatatio pos
+#' @param mut variant
 #'
-#' @return
+#' @return plotly
 #' @export
 plot_mutation_line <- function(inp_list,
                                region = "Spain",
