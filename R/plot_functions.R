@@ -488,7 +488,7 @@ plot_mutations_2 <- function(inp_list,
     if (region == "Catalunya") { reg = "Cataluña" } else { reg = region }
 
     df <- inp_list[[gene]][[pos]][[reg]] %>%
-        tidyr::pivot_longer(cols = 2:3) %>%
+        tidyr::pivot_longer(cols = -1) %>%
         tidyr::replace_na(list(value = 0)) %>%
         dplyr::mutate(
             week = stringr::str_remove(week_num, ".*-"),
@@ -567,7 +567,7 @@ plot_mutation_line <- function(inp_list,
     na_replace[[mut]] <- 0
 
     prepro <- inp_list[[gene]][[pos]][[reg]] %>%
-        tidyr::pivot_longer(cols = 2:3) %>%
+        tidyr::pivot_longer(cols = -1) %>%
         tidyr::replace_na(list(value = 0)) %>%
         dplyr::mutate(
             week = stringr::str_remove(week_num, ".*-"),
@@ -608,3 +608,18 @@ plot_mutation_line <- function(inp_list,
         plotly::config(displaylogo = FALSE)
 }
 
+#' Title
+#'
+#' @param msg output message
+#'
+#' @return plotly
+#' @export
+empty_plot <- function(msg = "No data for this region") {
+    pp <- tibble::tibble(x = 1, y = 1, text = msg) %>%
+        ggplot(aes(x, y, label = text)) +
+        geom_text() +
+        theme_void()
+
+    plotly::ggplotly(pp) %>%
+        plotly::config(displaylogo = FALSE)
+}
