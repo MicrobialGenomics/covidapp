@@ -433,7 +433,8 @@ footer <- shiny::div(
                             shiny::img(
                                 src = "images/logo_irsicaixa.png",
                                 height = '60px',
-                                width = '150px'
+                                width = '150px',
+                                style = "opacity: 0.6;"
                             )
                         )
                     )
