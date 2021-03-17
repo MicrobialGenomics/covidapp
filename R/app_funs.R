@@ -7,9 +7,9 @@ ui <- function() {
             title = shiny::div(
                 shiny::img(
                     src = "images/covidtag.png",
-                    height = 60,
-                    width = 70,
-                    style = "margin:-20px 5px"
+                    height = 80,
+                    width = 80,
+                    style = "margin:-50px 5px"
                 ),
                 shiny::h6(
                     "Enabled by data from",
