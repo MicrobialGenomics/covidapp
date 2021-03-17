@@ -6,7 +6,7 @@ ui <- function() {
         shiny::navbarPage(
             title = shiny::div(
                 shiny::img(
-                    src = "images/covidtag.png",
+                    src = "images/covidTag.png",
                     height = 80,
                     width = 80,
                     style = "margin:-50px 5px"
