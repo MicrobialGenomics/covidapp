@@ -74,13 +74,28 @@ map_module_ui <- function(id) {
 map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
+        ## Load data
+        df <- readr::read_rds("data/MergedData_spain.rds") %>%
+            tidyr::drop_na(week_num) %>%
+            dplyr::filter(acom_name != "Spain") %>%
+            dplyr::mutate(
+                acom_name = factor(
+                    acom_name,
+                    c(unique(acom_name), "Territorio no asociado a ninguna autonomía")
+                ),
+                date = format(collection_date, "%y-%W"),
+                week = as.numeric(stringr::str_remove(date, ".*-")),
+                year = as.numeric(stringr::str_remove(date, "-.*")),
+                date = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+            )
+
         ## Slider date
         output$plot_date <- shiny::renderUI({
             shinyWidgets::sliderTextInput(
                 inputId = session$ns("plot_date"),
                 label = shiny::h5("Select mapping date"),
-                choices = format(sort(as.Date(names(df_map$map_data), format = "%Y-%m-%d" )), "%d %b %y"),
-                selected = format(max(as.Date(names(df_map$map_data), format = "%Y-%m-%d" )), "%d %b %y"),
+                choices = format(sort(unique(df$date)), "%d %b %y"),
+                selected = format(max(df$date), "%d %b %y"),
                 grid = FALSE
             )
         }) %>%
@@ -89,49 +104,115 @@ map_module_server <- function(id) {
         ## Filter by date
         f_df <- shiny::reactive({
             shiny::req(input$plot_date)
-            format_date <- as.Date(input$plot_date, "%d %b %y")
-            df_map$dat %>%
+            format_date <- lubridate::parse_date_time(input$plot_date, 'd b y')
+            df %>%
                 dplyr::filter(date <= format_date)
         })
 
-        ## Plot map
-        output$mymap <- leaflet::renderLeaflet({
-            shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
+        ## Base map
+        map <- ca_spain_gj
+        map$cases <- df %>%
+            dplyr::count(acom_name, .drop = FALSE) %>%
+            dplyr::left_join(
+                x = tibble::tibble(acom_name = map$acom_name),
+                y = .,
+                by = "acom_name"
+            ) %>%
+            dplyr::pull(n)
+
+        bins = c(seq(0, max(map$cases) + max(map$cases)*0.2 , by = round(max(map$cases)*0.2)))
+        cv_pal <- leaflet::colorBin("Oranges", domain = map$cases, bins = bins)
+
+        map$norm_cases <- map$cases / ca_inhabitants * 1e5
+        map$norm_cases[is.na(map$norm_cases)] <- 0
+
+        bins_norm = c(seq(0, max(map$norm_cases) + max(map$norm_cases)*0.2 , by = round(max(map$norm_cases)*0.2)))
+        cv_pal_norm <- leaflet::colorBin("Reds", domain = map$norm_cases, bins = bins_norm)
+
+        base_map <- leaflet::leaflet(map) %>%
+            leaflet::addTiles() %>%
+            leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) %>%
+            leaflet::setView(lng = -4, lat = 40, zoom = 6) %>%
+            leaflet::addLegend(
+                position = "topright",
+                pal = cv_pal_norm,
+                values = ~ norm_cases,
+                title = "<small>Seq. cases per 1e5 inhab.</small>"
+            ) %>%
+            leaflet::addLegend(
+                position = "topright",
+                pal = cv_pal,
+                values = ~ cases,
+                title = "<small>Total Sequenced cases</small>"
+            )
+
+        output$mymap <- leaflet::renderLeaflet({ base_map })
+
+        ## Map reactivity
+        observeEvent(c(input$plot_date, input$norm),  {
+            map$cases <- f_df() %>%
+                dplyr::count(acom_name, .drop = FALSE) %>%
+                dplyr::left_join(
+                    x = tibble::tibble(acom_name = map$acom_name),
+                    y = .,
+                    by = "acom_name"
+                ) %>%
+                dplyr::pull(n)
+
+            map$norm_cases <- map$cases / ca_inhabitants * 1e5
+            map$norm_cases[is.na(map$norm_cases)] <- 0
+
+            p <- map$acom_name %>%
+                purrr::set_names() %>%
+                purrr::map(function(x) {
+                    if (x == "Territorio no asociado a ninguna autonomía") {
+                        popup <- ggplot()
+                    } else {
+                        popup <- f_df() %>%
+                            prepro_variants(ca = x) %>%
+                            plot_vairants(type = "bar",
+                                          var = "counts",
+                                          pal = "mg",
+                                          plotly = FALSE)
+                    }
+                    popup
+                })
 
             if (isTRUE(input$norm)) {
-                df_map$bs_map_data$bs_map_data %>%
-                    base_map(df_map$bs_map_data$cv_pal_norm, df_map$bs_map_data$cv_pal) %>%
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
                     leaflet::addPolygons(
-                        data = df_map$map_data[[format_date]]$map_data,
+                        data = map,
                         stroke = FALSE,
                         smoothFactor = 0.3,
                         fillOpacity = 0.6,
-                        fillColor = ~ df_map$bs_map_data$cv_pal_norm(norm_cases)
+                        fillColor = ~ cv_pal_norm(norm_cases)
                     ) %>%
                     leaflet::addPolygons(
-                        data = df_map$map_data[[format_date]]$map_data,
+                        data = map,
                         stroke = FALSE,
                         fillOpacity = 0,
                         fillColor = "transparent",
-                        popup = leafpop::popupGraph(df_map$map_data[[format_date]]$popups, width = 500, height = 300)
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
                     )
             } else {
-                df_map$bs_map_data$bs_map_data %>%
-                    base_map(df_map$bs_map_data$cv_pal_norm, df_map$bs_map_data$cv_pal) %>%
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
                     leaflet::addPolygons(
-                        data = df_map$map_data[[format_date]]$map_data,
+                        data = map,
                         stroke = FALSE,
                         smoothFactor = 0.3,
                         fillOpacity = 0.6,
-                        fillColor = ~ df_map$bs_map_data$cv_pal(cases)
+                        fillColor = ~ cv_pal(cases)
                     ) %>%
                     leaflet::addPolygons(
-                        data = df_map$map_data[[format_date]]$map_data,
+                        data = map,
                         stroke = FALSE,
                         fillOpacity = 0,
                         fillColor = "transparent",
-                        popup = leafpop::popupGraph(df_map$map_data[[format_date]]$popups, width = 500, height = 300)
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
                     )
             }
         })
@@ -174,19 +255,11 @@ map_module_server <- function(id) {
             shiny::bindCache(f_df())
 
         # Plot counts
-        output$plot_counts <- shiny::renderPlot({
-            shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
-
-            df_map$line_plots[[format_date]][["pp_counts"]]
-        })
+        output$plot_counts <- shiny::renderPlot({ efforts_all(f_df())$pp_counts }) %>%
+            shiny::bindCache(f_df())
 
         # Plot commutative counts
-        output$plot_cumsum <- shiny::renderPlot({
-            shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
-
-            df_map$line_plots[[format_date]][["pp_cumsum"]]
-        })
+        output$plot_cumsum <- shiny::renderPlot({ efforts_all(f_df())$pp_cumsum }) %>%
+            shiny::bindCache(f_df())
     })
 }
