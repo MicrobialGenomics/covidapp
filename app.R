@@ -2,16 +2,16 @@ library(covidapp)
 library(ggplot2)
 
 
-# Preprocessing ap data --------------------------------------------------
-if (!file.exists("data/map_data.rds")) {
-    df_map <<- readr::read_rds("data/MergedData_spain.rds") %>%
-        map_data(my_map_data = ca_spain_gj, ca_inhabitants = ca_inhabitants)
-
-    readr::write_rds(df_map, file = "data/map_data.rds")
-} else {
-    df_map <<-  readr::read_rds("data/map_data.rds")
-}
-
+# Preprocessing map data --------------------------------------------------
+# if (!file.exists("data/map_data.rds")) {
+#     df_map <- readr::read_rds("data/MergedData_spain.rds") %>%
+#         map_data(my_map_data = ca_spain_gj, ca_inhabitants = ca_inhabitants)
+#
+#     readr::write_rds(df_map, file = "data/map_data.rds")
+# } else {
+#     df_map <<-  readr::read_rds("data/map_data.rds")
+# }
+df_map <<-  readr::read_rds("data/map_data.rds")
 shiny::shinyApp(ui = covidapp::ui(), server = covidapp::server())
 
 
