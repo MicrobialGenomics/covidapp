@@ -231,41 +231,6 @@ plot_variant_by_com <- function(df, variant, var_col) {
         plotly::config(displaylogo = FALSE)
 }
 
-
-#' Title
-#'
-#' @param df df
-#'
-#' @return plotly
-#' @export
-efforts_all <- function(df) {
-    ## Edit center names
-    prepro <- df %>%
-        dplyr::count(date) %>%
-        dplyr::arrange(date) %>%
-        dplyr::mutate(cum = cumsum(n))
-
-    ## Plotting by position type
-    by_date <- prepro %>%
-        ggplot(aes(x = date, y = n)) +
-        geom_line(colour = "#E16462FF") +
-        geom_point(colour = "#E16462FF") +
-        theme_minimal(base_rect_size = 0) +
-        theme(legend.position = "none") +
-        labs(x = "Date", y = "New sequences (weekly)")
-
-    accomulate <- prepro %>%
-        ggplot(aes(x = date, y = cum)) +
-        geom_line(colour = "#E16462FF") +
-        geom_point(colour = "#E16462FF") +
-        theme_minimal(base_rect_size = 0) +
-        theme(legend.position = "none") +
-        labs(x = "Date", y = "Comulative sequences")
-
-    list(pp_counts = by_date, pp_cumsum = accomulate)
-}
-
-
 #' Plot variant by C.A.
 #'
 #' @param df tibble
@@ -514,7 +479,6 @@ plot_mutations_2 <- function(inp_list,
             )
         )
 
-
     t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
     t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
 
@@ -622,4 +586,37 @@ empty_plot <- function(msg = "No data for this region") {
 
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
+}
+
+#' Title
+#'
+#' @param df df
+#'
+#' @return plotly
+#' @export
+efforts_all <- function(df) {
+    ## Edit center names
+    prepro <- df %>%
+        dplyr::count(date) %>%
+        dplyr::arrange(date) %>%
+        dplyr::mutate(cum = cumsum(n))
+
+    ## Plotting by position type
+    by_date <- prepro %>%
+        ggplot(aes(x = date, y = n)) +
+        geom_line(colour = "#E16462FF") +
+        geom_point(colour = "#E16462FF") +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
+        theme(legend.position = "none") +
+        labs(x = "Date", y = "New sequences (weekly)")
+
+    accomulate <- prepro %>%
+        ggplot(aes(x = date, y = cum)) +
+        geom_line(colour = "#E16462FF") +
+        geom_point(colour = "#E16462FF") +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
+        theme(legend.position = "none") +
+        labs(x = "Date", y = "Comulative sequences")
+
+    list(pp_counts = by_date, pp_cumsum = accomulate)
 }
