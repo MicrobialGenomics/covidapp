@@ -68,14 +68,14 @@ ui <- function() {
             ),
 
             # TAB3: Per Autonomous Com
-            shiny::tabPanel(
-                title = "Per C.A.",
-                value = "tab_3",
-                per_ca_module_ui("tab3"),
-                shiny::br(),
-                shiny::br(),
-                footer
-            ),
+            # shiny::tabPanel(
+            #     title = "Per C.A.",
+            #     value = "tab_3",
+            #     per_ca_module_ui("tab3"),
+            #     shiny::br(),
+            #     shiny::br(),
+            #     footer
+            # ),
 
             # # TAB4: Per Variant
             # shiny::tabPanel(
@@ -123,7 +123,7 @@ server <- function() {
         map_module_server("tab2")
 
         ## Module tab 3
-        per_ca_module_server("tab3")
+        # per_ca_module_server("tab3")
 
         # ## Module tab 4
         # per_variant_module_server("tab4")
