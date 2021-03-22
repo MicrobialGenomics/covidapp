@@ -592,8 +592,10 @@ empty_plot <- function(msg = "No data for this region") {
 #'
 #' @param df df
 #'
-#' @return plotly
+#' @return ggplot
 #' @export
+#'
+#' @import ggplot2
 efforts_all <- function(df) {
     ## Edit center names
     prepro <- df %>%
