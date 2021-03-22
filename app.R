@@ -1,4 +1,5 @@
 library(covidapp)
+library(ggplot2)
 
 
 # Preporcessing map data --------------------------------------------------
