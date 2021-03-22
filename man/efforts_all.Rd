@@ -10,7 +10,7 @@ efforts_all(df)
 \item{df}{df}
 }
 \value{
-plotly
+ggplot
 }
 \description{
 Title
