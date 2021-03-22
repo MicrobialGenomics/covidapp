@@ -95,7 +95,7 @@ map_module_server <- function(id) {
                 inputId = session$ns("plot_date"),
                 label = shiny::h5("Select mapping date"),
                 choices = format(sort(unique(df$date)), "%d %b %y"),
-                selected = format(max(df$date), "%d %b %y"),
+                selected = format(max(unique(df$date)), "%d %b %y"),
                 grid = FALSE
             )
         }) %>%
@@ -104,7 +104,7 @@ map_module_server <- function(id) {
         ## Filter by date
         f_df <- shiny::reactive({
             shiny::req(input$plot_date)
-            format_date <- lubridate::parse_date_time(input$plot_date, 'd b y')
+            format_date <- as.Date(input$plot_date, "%d %b %y")
             df %>%
                 dplyr::filter(date <= format_date)
         })
