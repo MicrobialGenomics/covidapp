@@ -250,7 +250,7 @@ efforts_all <- function(df) {
         ggplot(aes(x = date, y = n)) +
         geom_line(colour = "#E16462FF") +
         geom_point(colour = "#E16462FF") +
-        theme_minimal(base_rect_size = 0) +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
         theme(legend.position = "none") +
         labs(x = "Date", y = "New sequences (weekly)")
 
@@ -258,7 +258,7 @@ efforts_all <- function(df) {
         ggplot(aes(x = date, y = cum)) +
         geom_line(colour = "#E16462FF") +
         geom_point(colour = "#E16462FF") +
-        theme_minimal(base_rect_size = 0) +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
         theme(legend.position = "none") +
         labs(x = "Date", y = "Comulative sequences")
 
@@ -623,3 +623,29 @@ empty_plot <- function(msg = "No data for this region") {
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
 }
+
+
+
+base_map <- function(df, cv_pal_norm, cv_pal) {
+    leaflet::leaflet(df) %>%
+        leaflet::addTiles() %>%
+        leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) %>%
+        leaflet::setView(lng = -4, lat = 40, zoom = 6) %>%
+        leaflet::addLegend(
+            position = "topright",
+            pal = cv_pal_norm,
+            values = ~ norm_cases,
+            title = "<small>Seq. cases per 1e5 inhab.</small>"
+        ) %>%
+        leaflet::addLegend(
+            position = "topright",
+            pal = cv_pal,
+            values = ~ cases,
+            title = "<small>Total Sequenced cases</small>"
+        )
+}
+
+
+
+
+
