@@ -4,11 +4,7 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
-            shinyjs::useShinyjs(),
             title = shiny::div(
-                # shiny::tags$link(
-                #     rel = "Covid Tag"
-                # ),
                 shiny::img(
                     src = "images/covidTag.png",
                     height = 80,
@@ -108,7 +104,8 @@ ui <- function() {
                 shiny::br(),
                 shiny::br(),
                 footer
-            )
+            ),
+            shinyjs::useShinyjs()
         )
     )
 }
