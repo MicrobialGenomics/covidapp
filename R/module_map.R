@@ -118,10 +118,23 @@ map_module_server <- function(id) {
 
         ## Map reactivity
         shiny::observeEvent(c(input$plot_date, input$norm), {
-            shiny::req(input$plot_date)
+            shiny::req(input$plot_date, f_df())
             format_date <- input$plot_date %>% as.Date("%d %b %y") %>% paste()
             map <- df_map$bs_map$base_map
-            p <- df_map$maps[[format_date]]$popups
+
+            p <- map$acom_name %>%
+                purrr::set_names() %>%
+                purrr::map(function(x) {
+                    if (x == "Territorio no asociado a ninguna autonomía") {
+                        popup <- ggplot()
+                    } else {
+                        popup <- f_df() %>%
+                            dplyr::filter(acom_name == x) %>%
+                            efforts_all() %>% .[["dual"]]
+                    }
+                    popup
+                })
+
             if (isTRUE(input$norm)) {
                 map[["norm_cases"]] <- df_map$maps[[format_date]]$map_data$norm_cases
                 leaflet::leafletProxy("mymap") %>%
@@ -202,18 +215,16 @@ map_module_server <- function(id) {
 
         # Plot counts
         output$plot_counts <- shiny::renderPlot({
-            shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
-            df_map$line_plots[[format_date]]$pp_counts
+            shiny::req(f_df())
+            f_df() %>% efforts_all() %>% .[["pp_counts"]]
         }) %>%
-            shiny::bindCache(input$plot_date)
+            shiny::bindCache(f_df())
 
         # Plot commutative counts
         output$plot_cumsum <- shiny::renderPlot({
-            shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
-            df_map$line_plots[[format_date]]$pp_cumsum
+            shiny::req(f_df())
+            f_df() %>% efforts_all() %>% .[["pp_cumsum"]]
         }) %>%
-            shiny::bindCache(input$plot_date)
+            shiny::bindCache(f_df())
     })
 }
