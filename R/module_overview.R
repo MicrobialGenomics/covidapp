@@ -108,7 +108,7 @@ overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         ## Load data
-        df_over <- df_over %>%
+        df_over <- readr::read_rds("data/MergedData_spain.rds") %>%
             dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
             dplyr::filter(!acom_name == "Spain")
 
