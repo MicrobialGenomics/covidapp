@@ -4,7 +4,7 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
-            title = shiny::div(
+            title = shiny::div("CovidTag",
                 shiny::img(
                     src = "images/covidTag.png",
                     height = 80,
