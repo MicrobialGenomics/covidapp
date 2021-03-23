@@ -612,13 +612,31 @@ efforts_all <- function(df) {
         theme(legend.position = "none") +
         labs(x = "Date", y = "New sequences (weekly)")
 
-    accomulate <- prepro %>%
-        ggplot(aes(x = date, y = cum)) +
-        geom_line(colour = "#E16462FF") +
-        geom_point(colour = "#E16462FF") +
-        theme_minimal(base_rect_size = 0, base_size = 15) +
-        theme(legend.position = "none") +
-        labs(x = "Date", y = "Comulative sequences")
+    # accomulate <- prepro %>%
+    #     ggplot(aes(x = date, y = cum)) +
+    #     geom_line(colour = "#E16462FF") +
+    #     geom_point(colour = "#E16462FF") +
+    #     theme_minimal(base_rect_size = 0, base_size = 15) +
+    #     theme(legend.position = "none") +
+    #     labs(x = "Date", y = "Comulative sequences")
 
-    list(pp_counts = by_date, pp_cumsum = accomulate)
+    coeff <- round(max(prepro$cum) / max(prepro$n))
+    dual <- prepro %>%
+        ggplot(aes(x = date)) +
+        geom_line(aes(y = n), colour = "#E16462FF") +
+        geom_point(aes(y = n), colour = "#E16462FF") +
+        geom_line(aes(y = cum / coeff), colour = "#6BAED6") +
+        geom_point(aes(y = cum / coeff), colour = "#6BAED6") +
+        scale_y_continuous(
+            name = "New sequences (weekly)",
+            sec.axis = sec_axis(~.*coeff, name = "Comulative sequences")
+        ) +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
+        theme(
+            axis.title.y = element_text(color = "#E16462FF"),
+            axis.title.y.right = element_text(color = "#6BAED6")
+        ) +
+        labs(x = "Date")
+
+    list(pp_counts = by_date, pp_cumsum = dual)
 }
