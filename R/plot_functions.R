@@ -612,13 +612,13 @@ efforts_all <- function(df) {
         theme(legend.position = "none") +
         labs(x = "Date", y = "New sequences (weekly)")
 
-    # accomulate <- prepro %>%
-    #     ggplot(aes(x = date, y = cum)) +
-    #     geom_line(colour = "#E16462FF") +
-    #     geom_point(colour = "#E16462FF") +
-    #     theme_minimal(base_rect_size = 0, base_size = 15) +
-    #     theme(legend.position = "none") +
-    #     labs(x = "Date", y = "Comulative sequences")
+    accomulate <- prepro %>%
+        ggplot(aes(x = date, y = cum)) +
+        geom_line(colour = "#E16462FF") +
+        geom_point(colour = "#E16462FF") +
+        theme_minimal(base_rect_size = 0, base_size = 15) +
+        theme(legend.position = "none") +
+        labs(x = "Date", y = "Comulative sequences")
 
     coeff <- round(max(prepro$cum) / max(prepro$n))
     dual <- prepro %>%
@@ -638,5 +638,5 @@ efforts_all <- function(df) {
         ) +
         labs(x = "Date")
 
-    list(pp_counts = by_date, pp_cumsum = dual)
+    list(pp_counts = by_date, pp_cumsum = accomulate, dual = dual)
 }
