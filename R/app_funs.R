@@ -4,7 +4,11 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
-            title = shiny::div("CovidTag",
+            shinyjs::useShinyjs(),
+            title = shiny::div(
+                # shiny::tags$link(
+                #     rel = "Covid Tag"
+                # ),
                 shiny::img(
                     src = "images/covidTag.png",
                     height = 80,
@@ -45,7 +49,6 @@ ui <- function() {
                     style = "right: 75px; top: 20px; position: absolute;"
                 )
             ),
-
             theme = shinythemes::shinytheme("flatly"),
             fluid = TRUE,
             collapsible = TRUE,
@@ -115,6 +118,8 @@ ui <- function() {
 #' @export
 server <- function() {
     function(input, output, session) {
+
+        shinyjs::runjs('document.title = "CovidTag"')
 
         ## Module tab 1
         overview_module_server("tab1")
