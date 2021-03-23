@@ -62,18 +62,18 @@ map_data <- function(df, my_map_data, ca_inhabitants) {
         purrr::map(function(filt_date) {
             dat <- dat %>% dplyr::filter(date <= filt_date)
 
-            popups <- map$acom_name %>%
-                purrr::set_names() %>%
-                purrr::map(function(x) {
-                    if (x == "Territorio no asociado a ninguna autonomía") {
-                        popup <- ggplot()
-                    } else {
-                        popup <- dat %>%
-                            dplyr::filter(acom_name == x) %>%
-                            efforts_all() %>% .[[2]]
-                    }
-                    popup
-                })
+            # popups <- map$acom_name %>%
+            #     purrr::set_names() %>%
+            #     purrr::map(function(x) {
+            #         if (x == "Territorio no asociado a ninguna autonomía") {
+            #             popup <- ggplot()
+            #         } else {
+            #             popup <- dat %>%
+            #                 dplyr::filter(acom_name == x) %>%
+            #                 efforts_all() %>% .[["dual"]]
+            #         }
+            #         popup
+            #     })
 
             res <- list()
             res$cases <- dat %>%
@@ -88,23 +88,13 @@ map_data <- function(df, my_map_data, ca_inhabitants) {
             res$norm_cases <- res$cases / ca_inhabitants * 1e5
             res$norm_cases[is.na(res$norm_cases)] <- 0
 
-            list(map_data = res, popups = popups)
-        })
-
-    line_plots <- dat$date %>%
-        unique() %>%
-        purrr::set_names() %>%
-        purrr::map(function(filt_date) {
-            dat <- dat %>% dplyr::filter(date <= filt_date)
-
-            dat %>% efforts_all()
+            list(map_data = res)#, popups = popups)
         })
 
     list(
         dat = dat,
         bs_map = bs_map,
-        maps = map_plot,
-        line_plots = line_plots
+        maps = map_plot
     )
 }
 
