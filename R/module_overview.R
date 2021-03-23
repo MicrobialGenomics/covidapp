@@ -108,7 +108,7 @@ overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         ## Load data
-        df <- readr::read_rds("data/MergedData_spain.rds") %>%
+        df_over <- df_over %>%
             dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
             dplyr::filter(!acom_name == "Spain")
 
@@ -130,9 +130,9 @@ overview_module_server <- function(id) {
         ## Clades/Variants/Mutations UI
         clades <- shiny::reactive({
             if (input$var_annot == "NCClade") {
-                clades <- dplyr::pull(df, NCClade) %>% forcats::fct_infreq() %>% levels()
+                clades <- dplyr::pull(df_over, NCClade) %>% forcats::fct_infreq() %>% levels()
             } else if (input$var_annot == "pangolin_lineage") {
-                clades <- dplyr::pull(df, pangolin_lineage) %>%
+                clades <- dplyr::pull(df_over, pangolin_lineage) %>%
                     forcats::fct_infreq() %>% levels() %>% .[1:14]
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
@@ -156,13 +156,13 @@ overview_module_server <- function(id) {
 
         ## Render Region options
         output$region <- shiny::renderUI({
-            shiny::req(exists("df"))
+            shiny::req(exists("df_over"))
             shinyWidgets::pickerInput(
                 inputId = session$ns("region"),
                 label = shiny::h5("Region for left plots"),
                 choices = list(
-                    "Left Plot" = c("Spain", df$acom_name %>% unique()),
-                    "Right Plot" = stringr::str_c(c("Spain", df$acom_name %>% unique()), " ")
+                    "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
+                    "Right Plot" = stringr::str_c(c("Spain", df_over$acom_name %>% unique()), " ")
                 ),
                 multiple = TRUE,
                 selected = c("Spain", "Catalunya "),
@@ -217,7 +217,7 @@ overview_module_server <- function(id) {
         # Plots -------------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$region, input$var_annot, input$stack_p1, exists("mt"))
+            shiny::req(exists("df_over"), input$region, input$var_annot, input$stack_p1, exists("mt"))
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 pp <- mt %>%
@@ -227,7 +227,7 @@ overview_module_server <- function(id) {
                         var = input$stack_p1
                     )
             } else {
-                pp <- df %>%
+                pp <- df_over %>%
                     prepro_variants(ca = input$region[[1]], var_anno = input$var_annot) %>%
                     plot_vairants(type = "bar", var = input$stack_p1)
             }
@@ -237,7 +237,7 @@ overview_module_server <- function(id) {
 
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
-            shiny::req(exists("df"), input$var_annot, input$stack_p1, input$region)
+            shiny::req(exists("df_over"), input$var_annot, input$stack_p1, input$region)
 
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
@@ -248,7 +248,7 @@ overview_module_server <- function(id) {
                         var = input$stack_p1
                     )
             } else {
-                pp <- df %>%
+                pp <- df_over %>%
                     prepro_variants(
                         ca = stringr::str_remove_all(input$region[[2]], ' $'),
                         var_anno = input$var_annot
@@ -261,7 +261,7 @@ overview_module_server <- function(id) {
 
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
-            shiny::req(exists("df"),
+            shiny::req(exists("df_over"),
                        input$var_annot,
                        input$region,
                        input$variant)
@@ -274,11 +274,11 @@ overview_module_server <- function(id) {
                                          mut = input$variant)
             } else {
                 if (input$region[[1]] == "Spain") {
-                    pp <- df %>%
+                    pp <- df_over %>%
                         plot_variant_line(variant = input$variant,
                                           var_col = input$var_annot)
                 } else {
-                    pp <- df %>%
+                    pp <- df_over %>%
                         dplyr::filter(acom_name == input$region[[1]]) %>%
                         plot_variant_line(variant = input$variant,
                                           var_col = input$var_annot)
@@ -291,7 +291,7 @@ overview_module_server <- function(id) {
 
         ## Plot 4
         output$plot_4 <- plotly::renderPlotly({
-            shiny::req(exists("df"),
+            shiny::req(exists("df_over"),
                        input$var_annot,
                        input$region,
                        input$variant)
@@ -306,11 +306,11 @@ overview_module_server <- function(id) {
                 )
             } else {
                 if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
-                    pp <- df %>%
+                    pp <- df_over %>%
                         plot_variant_line(variant = input$variant,
                                           var_col = input$var_annot)
                 } else {
-                    pp <- df %>%
+                    pp <- df_over %>%
                         dplyr::filter(acom_name == stringr::str_remove_all(input$region[[2]], ' $' )) %>%
                         plot_variant_line(variant = input$variant,
                                           var_col = input$var_annot)
