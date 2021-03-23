@@ -606,16 +606,15 @@ efforts_all <- function(df) {
     ## Plotting by position type
     by_date <- prepro %>%
         ggplot(aes(x = date, y = n)) +
-        geom_line(colour = "#E16462FF") +
-        geom_point(colour = "#E16462FF") +
+        geom_bar(stat = "identity", colour = NA, fill = "#FDAE61", alpha = 0.7) +
         theme_minimal(base_rect_size = 0, base_size = 15) +
         theme(legend.position = "none") +
         labs(x = "Date", y = "New sequences (weekly)")
 
     accomulate <- prepro %>%
         ggplot(aes(x = date, y = cum)) +
-        geom_line(colour = "#E16462FF") +
-        geom_point(colour = "#E16462FF") +
+        geom_line(colour = "#6BAED6") +
+        geom_point(colour = "#6BAED6") +
         theme_minimal(base_rect_size = 0, base_size = 15) +
         theme(legend.position = "none") +
         labs(x = "Date", y = "Comulative sequences")
@@ -623,8 +622,7 @@ efforts_all <- function(df) {
     coeff <- round(max(prepro$cum) / max(prepro$n))
     dual <- prepro %>%
         ggplot(aes(x = date)) +
-        geom_line(aes(y = n), colour = "#E16462FF") +
-        geom_point(aes(y = n), colour = "#E16462FF") +
+        geom_bar(aes(y = n), stat = "identity", colour = NA, fill = "#FDAE61", alpha = 0.8) +
         geom_line(aes(y = cum / coeff), colour = "#6BAED6") +
         geom_point(aes(y = cum / coeff), colour = "#6BAED6") +
         scale_y_continuous(
