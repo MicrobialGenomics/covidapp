@@ -94,13 +94,70 @@ map_module_server <- function(id) {
                 dplyr::filter(date <= format_date)
         })
 
-        output$mymap <- leaflet::renderLeaflet({
+        ## Base map
+        base_map <- leaflet::leaflet(df_map$bs_map$base_map) %>%
+            leaflet::addTiles() %>%
+            leaflet::addProviderTiles(leaflet::providers$CartoDB.Positron) %>%
+            leaflet::setView(lng = -4, lat = 40, zoom = 6) %>%
+            leaflet::addLegend(
+                position = "topright",
+                pal = df_map$bs_map$cv_pal_norm,
+                values = ~ norm_cases,
+                title = "<small>Seq. cases per 1e5 inhab.</small>"
+            ) %>%
+            leaflet::addLegend(
+                position = "topright",
+                pal = df_map$bs_map$cv_pal,
+                values = ~ cases,
+                title = "<small>Total Sequenced cases</small>"
+            )
+
+        output$mymap <- leaflet::renderLeaflet({ base_map })
+
+        ## Map reactivity
+        shiny::observeEvent(c(input$plot_date, input$norm), {
             shiny::req(input$plot_date)
-            format_date <- paste(as.Date(input$plot_date, "%d %b %y"))
+            format_date <- input$plot_date %>% as.Date("%d %b %y") %>% paste()
+            map <- df_map$bs_map$base_map
+            p <- df_map$maps[[format_date]]$popups
             if (isTRUE(input$norm)) {
-                df_map$maps[[format_date]]$norm_map
+                map[["norm_cases"]] <- df_map$maps[[format_date]]$map_data$norm_cases
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        smoothFactor = 0.3,
+                        fillOpacity = 0.6,
+                        fillColor = ~ df_map$bs_map$cv_pal_norm(norm_cases)
+                    ) %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        fillOpacity = 0,
+                        fillColor = "transparent",
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
+                    )
             } else {
-                df_map$maps[[format_date]]$unnorm_map
+                map[["cases"]] <- df_map$maps[[format_date]]$map_data$cases
+                leaflet::leafletProxy("mymap") %>%
+                    leaflet::clearMarkers() %>%
+                    leaflet::clearShapes() %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        smoothFactor = 0.3,
+                        fillOpacity = 0.6,
+                        fillColor = ~ df_map$bs_map$cv_pal(cases)
+                    ) %>%
+                    leaflet::addPolygons(
+                        data = map,
+                        stroke = FALSE,
+                        fillOpacity = 0,
+                        fillColor = "transparent",
+                        popup = leafpop::popupGraph(p, width = 500, height = 300)
+                    )
             }
         })
 
