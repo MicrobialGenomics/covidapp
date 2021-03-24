@@ -482,7 +482,7 @@ footer <- shiny::div(
         ),
         shiny::br(),
         shiny::tags$a(
-            href = "",
+            # href = "",
             shiny::h6(
                 "Developed by Francesc Català Moll and Marc Noguera i Julian",
                 align = "center",
