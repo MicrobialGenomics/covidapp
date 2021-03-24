@@ -34,7 +34,7 @@ ui <- function() {
                         )
                     ),
                     shiny::tags$a(
-                        href = "https://twitter.com/fcatalamoll",
+                        href = "https://twitter.com/MicrobialGene",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,

@@ -332,9 +332,9 @@ overview_module_server <- function(id) {
 
 popup_help_text = shiny::fluidPage(
     shiny::fixedRow(
-        shiny::h1("Overview",
+        shiny::h3("Overview",
                   align = "center",
-                  style = "font-family: 'Brush Script MT';"),
+                  style = "font-weight: bold; font-style: italic;"),
         shiny::fixedRow(
             shiny::h5(
                 "This section allows a comparative exploration of the
