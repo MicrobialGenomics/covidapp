@@ -40,7 +40,8 @@ Imports:
     leafpop,
     DT,
     lubridate,
-    purrr
+    purrr,
+    shinycssloaders
 Suggests: 
     roxygen2
 Depends: 
