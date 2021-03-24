@@ -66,7 +66,8 @@ overview_module_ui <- function(id) {
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_1_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_1_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_1"), height = 400)
+                    plotly::plotlyOutput(shiny::NS(id, "plot_1"), height = 400) %>%
+                        shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
 
                 ## Plot 2
@@ -74,7 +75,8 @@ overview_module_ui <- function(id) {
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_2_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_2_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_2"), height = 400)
+                    plotly::plotlyOutput(shiny::NS(id, "plot_2"), height = 400) %>%
+                        shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 )
             ),
             shiny::br(),
@@ -85,7 +87,8 @@ overview_module_ui <- function(id) {
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_3_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_3_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_3"), height = 400)
+                    plotly::plotlyOutput(shiny::NS(id, "plot_3"), height = 400) %>%
+                        shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
 
                 ## Plot 4
@@ -93,7 +96,8 @@ overview_module_ui <- function(id) {
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_4_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_4_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_4"), height = 400)
+                    plotly::plotlyOutput(shiny::NS(id, "plot_4"), height = 400) %>%
+                        shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 )
             )
         )
