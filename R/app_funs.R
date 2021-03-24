@@ -116,8 +116,6 @@ ui <- function() {
 server <- function() {
     function(input, output, session) {
 
-        df_map <<- readr::read_rds("data/map_data.rds")
-
         shinyjs::runjs('document.title = "CovidTag"')
 
         ## Module tab 1
