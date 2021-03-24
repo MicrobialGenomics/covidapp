@@ -78,11 +78,16 @@ map_module_server <- function(id) {
 
         ## Slider date
         output$plot_date <- shiny::renderUI({
+            dates <- format(as.Date(sort(names(df_map$maps))), "%d %b %y")
             shinyWidgets::sliderTextInput(
                 inputId = session$ns("plot_date"),
                 label = shiny::h5("Select mapping date"),
-                choices = format(as.Date(sort(names(df_map$maps))), "%d %b %y"),
-                selected = format(max(as.Date(sort(names(df_map$maps)))), "%d %b %y"),
+                choices = dates,
+                selected = c(dates[1], dates[length(dates)]),
+                from_min = dates[1],
+                from_max = dates[length(dates) - 8],
+                to_min = dates[8],
+                to_max = dates[length(dates)],
                 grid = FALSE
             )
         }) %>%
@@ -91,9 +96,10 @@ map_module_server <- function(id) {
         ## Filter by date
         f_df <- shiny::reactive({
             shiny::req(input$plot_date)
-            format_date <- as.Date(input$plot_date, "%d %b %y")
+            format_date_min <- as.Date(input$plot_date[[1]], "%d %b %y")
+            format_date_max <- as.Date(input$plot_date[[2]], "%d %b %y")
             df_map$dat %>%
-                dplyr::filter(date <= format_date)
+                dplyr::filter(date <= format_date_max & date >= format_date_min)
         })
 
         ## Base map
@@ -119,9 +125,9 @@ map_module_server <- function(id) {
         ## Map reactivity
         shiny::observeEvent(c(input$plot_date, input$norm), {
             shiny::req(input$plot_date, f_df())
-            format_date <- input$plot_date %>% as.Date("%d %b %y") %>% paste()
+            format_date_min <- input$plot_date[[1]] %>% as.Date("%d %b %y") %>% paste()
+            format_date_max <- input$plot_date[[2]] %>% as.Date("%d %b %y") %>% paste()
             map <- df_map$bs_map$base_map
-
             p <- map$acom_name %>%
                 purrr::set_names() %>%
                 purrr::map(function(x) {
@@ -136,7 +142,9 @@ map_module_server <- function(id) {
                 })
 
             if (isTRUE(input$norm)) {
-                map[["norm_cases"]] <- df_map$maps[[format_date]]$map_data$norm_cases
+                top_vals <- df_map$maps[[format_date_max]]$map_data$norm_cases
+                min_vals <- df_map$maps[[format_date_min]]$map_data$norm_cases
+                map[["norm_cases"]] <- top_vals - min_vals
                 leaflet::leafletProxy("mymap") %>%
                     leaflet::clearMarkers() %>%
                     leaflet::clearShapes() %>%
@@ -155,7 +163,9 @@ map_module_server <- function(id) {
                         popup = leafpop::popupGraph(p, width = 500, height = 300)
                     )
             } else {
-                map[["cases"]] <- df_map$maps[[format_date]]$map_data$cases
+                top_vals <- df_map$maps[[format_date_max]]$map_data$cases
+                min_vals <- df_map$maps[[format_date_min]]$map_data$cases
+                map[["cases"]] <- top_vals - min_vals
                 leaflet::leafletProxy("mymap") %>%
                     leaflet::clearMarkers() %>%
                     leaflet::clearShapes() %>%
