@@ -66,7 +66,8 @@ per_ca_module_ui <- function(id) {
         # main
         mainPanel = shiny::mainPanel(
             width = 9,
-            shiny::uiOutput(outputId = ns("plots"))
+            shiny::uiOutput(outputId = ns("plots")) %>%
+                shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
         )
     )
 }

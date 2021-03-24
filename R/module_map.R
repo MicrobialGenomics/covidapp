@@ -30,8 +30,16 @@ map_module_ui <- function(id) {
             shiny::h4(shiny::textOutput(outputId = ns("week_seq")), align = "right"),
             shiny::h6(shiny::textOutput(outputId = ns("sel_week")), align = "right"),
             shiny::h6(shiny::textOutput(outputId = ns("count_ca")), align = "right"),
-            shiny::plotOutput(outputId = ns("plot_counts"), height = "150px", width = "100%"),
-            shiny::plotOutput(outputId = ns("plot_cumsum"), height = "150px", width = "100%"),
+            shiny::plotOutput(
+                outputId = ns("plot_counts"),
+                height = "150px",
+                width = "100%"
+            ) %>% shinycssloaders::withSpinner(type = 7, color = "#ABD9E9", hide.ui = FALSE),
+            shiny::plotOutput(
+                outputId = ns("plot_cumsum"),
+                height = "150px",
+                width = "100%"
+            ),
 
             shiny::uiOutput(outputId = ns("plot_date")),
             shinyWidgets::materialSwitch(
