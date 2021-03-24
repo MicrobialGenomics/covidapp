@@ -11,9 +11,49 @@ acknowledgements_module_ui <- function(id) {
         headerPanel = shiny::headerPanel(
             title = shiny::fluidPage(
                 shiny::fixedRow(
-                    shiny::h1("Acknowledgements",
+                    shiny::h3(
+                        "Notes for a correct interpretation",
+                        align = "center",
+                        style = "font-weight: bold; font-style: italic;"
+                    )
+                ),
+                shiny::fixedRow(
+                    shiny::h5(
+                        "•	Sampling may not be uniform within the different
+                        autonomous communities. Therefore, it is important not
+                        to assume that the counts/frequencies shown are
+                        necessarily representative of the region.",
+                        align = "center",
+                        style = "margin-left: 70px; margin-right: 70px; line-height: 25px;"
+                    ),
+                    shiny::h5(
+                        "• The charts used are based on the sample collection date,
+                        and sequencing or GISAID submission date. As a result,
+                        this date may differ from when the sample was processed
+                        and sequenced, and when the data is released to the public.",
+                        align = "center",
+                        style = "margin-left: 70px; margin-right: 70px; line-height: 25px;"
+                    ),
+                    shiny::h5(
+                        "• In relation with the last consideration, last data
+                        pints often has incomplete data and may change as more
+                        sequences come in.",
+                        align = "center",
+                        style = "margin-left: 70px; margin-right: 70px; line-height: 25px;"
+                    ),
+                    shiny::h5(
+                        "•	The mutations that define SARS-CoV-2 (CoV-19) lineages
+                        are updated every few days. Therefore, displayed data is
+                        susceptible to change over time.",
+                        align = "center",
+                        style = "margin-left: 70px; margin-right: 70px; line-height: 25px;"
+                    )
+                ),
+                shiny::br(),
+                shiny::fixedRow(
+                    shiny::h3("Acknowledgements",
                               align = "center",
-                              style = "font-family: 'Brush Script MT';"),
+                              style = "font-weight: bold; font-style: italic;"),
                 ),
                 shiny::fixedRow(
                     shiny::h5(
