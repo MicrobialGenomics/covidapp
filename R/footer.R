@@ -10,7 +10,7 @@ footer_1 <- shiny::div(
             shiny::column(
                 width = 3,
                 align = "center",
-                shiny::h2("Share us", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Share", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fixedRow(
                     shiny::tags$a(
@@ -62,7 +62,7 @@ footer_1 <- shiny::div(
             shiny::column(
                 width = 9,
                 align = "center",
-                shiny::h2("Powered by", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Powered by", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fixedRow(
                     shiny::column(
@@ -148,7 +148,7 @@ footer_1 <- shiny::div(
             shiny::column(
                 width = 7,
                 align = "center",
-                shiny::h2("Affilations", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Affilations", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::br(),
                 shiny::fluidRow(
@@ -197,7 +197,7 @@ footer_1 <- shiny::div(
             shiny::column(
                 width = 5,
                 align = "center",
-                shiny::h2("Developed by", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Developed by", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fixedRow(
                     # MNJ
@@ -306,7 +306,7 @@ footer <- shiny::div(
             shiny::column(
                 width = 6,
                 align = "center",
-                shiny::h2("Powered by", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Powered by", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fixedRow(
                     shiny::column(
@@ -386,7 +386,7 @@ footer <- shiny::div(
             shiny::column(
                 width = 3,
                 align = "center",
-                shiny::h2("Share us", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Share", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fixedRow(
                     shiny::tags$a(
@@ -422,7 +422,7 @@ footer <- shiny::div(
             shiny::column(
                 width = 3,
                 align = "center",
-                shiny::h2("Affiliations", style = "font-family: 'Brush Script MT';"),
+                shiny::h4("Affiliations", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
                 shiny::fluidRow(
                     shiny::column(
@@ -445,7 +445,7 @@ footer <- shiny::div(
             # shiny::column(
             #     width = 2,
             #     align = "center",
-            #     shiny::h2("Developed by", style = "font-family: 'Brush Script MT';"),
+            #     shiny::h2("Developed by", style = "font-weight: bold; font-style: italic;"),
             #     shiny::fixedRow(
             #         # MNJ
             #         shiny::column(
