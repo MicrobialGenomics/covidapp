@@ -84,10 +84,7 @@ map_module_server <- function(id) {
                 label = shiny::h5("Select mapping date"),
                 choices = dates,
                 selected = c(dates[1], dates[length(dates)]),
-                from_min = dates[1],
-                from_max = dates[length(dates) - 8],
-                to_min = dates[8],
-                to_max = dates[length(dates)],
+                from_max = dates[length(dates) - 1],
                 grid = FALSE
             )
         }) %>%
@@ -95,9 +92,10 @@ map_module_server <- function(id) {
 
         ## Filter by date
         f_df <- shiny::reactive({
-            shiny::req(input$plot_date)
+            shiny::req(input$plot_date, length(input$plot_date) == 2)
             format_date_min <- as.Date(input$plot_date[[1]], "%d %b %y")
             format_date_max <- as.Date(input$plot_date[[2]], "%d %b %y")
+            if (format_date_min == format_date_max) { format_date_max <- format_date_max + 7 }
             df_map$dat %>%
                 dplyr::filter(date <= format_date_max & date >= format_date_min)
         })
@@ -127,6 +125,7 @@ map_module_server <- function(id) {
             shiny::req(input$plot_date, f_df())
             format_date_min <- input$plot_date[[1]] %>% as.Date("%d %b %y") %>% paste()
             format_date_max <- input$plot_date[[2]] %>% as.Date("%d %b %y") %>% paste()
+            if (format_date_min == format_date_max) { format_date_max <- paste(as.Date(format_date_max) + 7) }
             map <- df_map$bs_map$base_map
             p <- map$acom_name %>%
                 purrr::set_names() %>%
@@ -134,9 +133,14 @@ map_module_server <- function(id) {
                     if (x == "Territorio no asociado a ninguna autonomía") {
                         popup <- ggplot()
                     } else {
-                        popup <- f_df() %>%
-                            dplyr::filter(acom_name == x) %>%
-                            efforts_all() %>% .[["dual"]]
+                        df <- f_df() %>% dplyr::filter(acom_name == x)
+
+                        if (nrow(df) < 5) {
+                            popup <- tibble::tibble(x = 1, y = 1, text = "No data for this region on selected dates") %>%
+                                ggplot(aes(x, y, label = text)) + theme_void(base_family = 20) + geom_text()
+                        } else {
+                            popup <- df %>% efforts_all() %>% .[["dual"]]
+                        }
                     }
                     popup
                 })
@@ -163,9 +167,7 @@ map_module_server <- function(id) {
                         popup = leafpop::popupGraph(p, width = 500, height = 300)
                     )
             } else {
-                top_vals <- df_map$maps[[format_date_max]]$map_data$cases
-                min_vals <- df_map$maps[[format_date_min]]$map_data$cases
-                map[["cases"]] <- top_vals - min_vals
+                map[["cases"]] <- df_map$maps[[format_date_max]]$map_data$cases
                 leaflet::leafletProxy("mymap") %>%
                     leaflet::clearMarkers() %>%
                     leaflet::clearShapes() %>%
