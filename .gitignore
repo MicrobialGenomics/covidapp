@@ -45,7 +45,5 @@ data/*MergedData_spain*
 data/*MutationEmbeddedData.rds
 data/*map_data.rds
 db/
-sessions/
-
 
 
