@@ -74,6 +74,7 @@ plot_vairants <- function(df,
                 #"<br>percentage:", round(pct, 2),
                 "<br>Counts:", counts,
                 "<br>Total counts:", sum,
+                "<br>Date:", week_num,
                 sep = " "
             )
         )
