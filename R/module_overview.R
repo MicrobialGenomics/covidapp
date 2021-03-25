@@ -112,6 +112,18 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
+        cdata <-  session$clientData
+        cdata %>%
+            names() %>%
+            isolate() %>%
+            purrr::map_dfc(function(x) {
+                tibble::tibble({{ x }} := isolate(cdata[[x]]))
+            }) %>%
+            dplyr::select(!dplyr::contains("output")) %>%
+            dplyr::mutate(date = Sys.time()) %>%
+            dplyr::slice_head(n = 1) %>%
+            readr::write_tsv(file = glue::glue("data/users/session_{stringi::stri_rand_strings(1, 10)}.tsv"))
+
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(

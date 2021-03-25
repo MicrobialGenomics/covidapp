@@ -221,10 +221,11 @@ map_module_server <- function(id) {
 
         # Selected date
         output$sel_week <- shiny::renderText({
-            sel_week <- input$plot_date
-            sel_week
+            min <- f_df()$collection_date %>% min() %>% format("%d %b %y")
+            max <- f_df()$collection_date %>% max() %>% format("%d %b %y")
+            glue::glue("from: {min} to: {max}")
         }) %>%
-            shiny::bindCache(input$plot_date)
+            shiny::bindCache(f_df())
 
         # Affected C.A. counts
         output$count_ca <- shiny::renderText({
