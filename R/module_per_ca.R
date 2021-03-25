@@ -80,40 +80,34 @@ per_ca_module_ui <- function(id) {
 per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        # df <- readr::read_rds("data/MergedData_spain.rds") %>%
-        #     dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
-        #     dplyr::filter(!acom_name == "Spain")
-
-        df <- df_over
-        com_aut <- df %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
+        com_aut <- df_ca %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
 
         output$option_ca <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("option_ca"),
                 label = shiny::h5("Autonomous Community:"),
-                choices = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
-                selected = c("Spain", df$acom_name %>% forcats::fct_infreq() %>% levels()),
+                choices = c("Spain", df_ca$acom_name %>% forcats::fct_infreq() %>% levels()),
+                selected = c("Spain", df_ca$acom_name %>% forcats::fct_infreq() %>% levels()),
                 multiple = TRUE
             )
         })
 
         all_plots <- shiny::reactive({
-            # shiny::req(input$bar_p1)
             shiny::req(input$stack_p1, input$var_annot)
             all_plots <- com_aut %>%
                 purrr::set_names() %>%
                 purrr::map(function(com) {
-                    df %>%
+                    df_ca %>%
                         prepro_variants(ca = com, var_anno = input$var_annot) %>%
                         plot_vairants(
-                            type = "bar", #input$bar_p1,
+                            type = "bar",
                             var = input$stack_p1,
                             pal_dir = -1,
                             pal = input$pal_p1
                         )
                 })
         }) %>%
-            shiny::bindCache(input$stack_p1, input$var_annot) #, input$bar_p1)
+            shiny::bindCache(input$stack_p1, input$var_annot)
 
         output$plots <- shiny::renderUI({
             lapply(input$option_ca, function(pp) {
