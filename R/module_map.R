@@ -82,8 +82,6 @@ map_module_ui <- function(id) {
 map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        # df_map <- readr::read_rds("data/map_data.rds")
-
         ## Slider date
         output$plot_date <- shiny::renderUI({
             dates <- format(as.Date(sort(names(df_map$maps))), "%d %b %y")
