@@ -112,13 +112,6 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        ## Load data
-        # df_over <<- readr::read_rds("data/MergedData_spain.rds") %>%
-        #     dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
-        #     dplyr::filter(!acom_name == "Spain")
-        # mt <- readr::read_rds("data/MutationEmbeddedData.rds")
-        # mt_pos <- extract_mutations(mt)
-
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(
