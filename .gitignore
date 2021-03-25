@@ -41,10 +41,11 @@ vignettes/*.pdf
 
 covidapp.Rproj
 data/*.geojson
-data/*MergedData_spain.rds
+data/*MergedData_spain*
 data/*MutationEmbeddedData.rds
 data/*map_data.rds
 db/
+data/users/*
 
 
 
