@@ -7,7 +7,6 @@ RUN rm -rf /srv/shiny-server/*
 ADD ./covidapp /srv/shiny-server
 
 RUN chmod -R +r /srv/shiny-server
-RUN chmod -R 777 /srv/shiny-server
 
 # Install covidapp and covidseq
 RUN R -e "devtools::install('/srv/shiny-server')"
