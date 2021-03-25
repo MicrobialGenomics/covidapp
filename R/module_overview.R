@@ -122,7 +122,7 @@ overview_module_server <- function(id) {
             dplyr::select(!dplyr::contains("output")) %>%
             dplyr::mutate(date = Sys.time()) %>%
             dplyr::slice_head(n = 1) %>%
-            readr::write_tsv(file = glue::glue("data/users/session_{stringi::stri_rand_strings(1, 10)}.tsv"))
+            readr::write_tsv(file = glue::glue("sessions/session_{stringi::stri_rand_strings(1, 10)}.tsv"))
 
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
