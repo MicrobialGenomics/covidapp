@@ -18,11 +18,12 @@ map_module_ui <- function(id) {
             top = 180, left = 55, width = 300, fixed = TRUE,
             draggable = TRUE, height = "auto",
             shiny::span(shiny::tags$i(
+                shiny::h6(shiny::textOutput(outputId = ns('ver'))),
                 shiny::h6(
-                    "Data from GISAID Initiative. Note, that it is important
+                        "Data from GISAID Initiative. Note, that it is important
                         not to assume that shown data are necessarily
                         representative of the all region due to a potential non
-                        uniform sampling"
+                        uniform sampling."
                 )
             ), style = "color:#045a8d; text-align: justify;"),
             shiny::br(),
@@ -81,6 +82,11 @@ map_module_ui <- function(id) {
 #' @export
 map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
+
+        output$ver <- shiny::renderText({
+            list.files("data", pattern = "MergedData_spain_") %>%
+                stringr::str_remove_all(".*n_|.rds")
+        })
 
         ## Slider date
         output$plot_date <- shiny::renderUI({
