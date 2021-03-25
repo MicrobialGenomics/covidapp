@@ -1,5 +1,7 @@
 library(covidapp)
 
+dir.create("sessions", recursive = TRUE, showWarnings = FALSE)
+
 # Load map module data ----------------------------------------------------
 df_map <<- readr::read_rds("data/map_data.rds")
 
