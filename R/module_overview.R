@@ -12,12 +12,25 @@ overview_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            div(style = "display: none;",
-                textInput("remote_addr", "remote_addr",
-                          if (!is.null(req[["HTTP_X_FORWARDED_FOR"]]))
-                              req[["HTTP_X_FORWARDED_FOR"]]
-                          else
-                              req[["REMOTE_ADDR"]])),
+            shiny::tags$script('
+              $(document).ready(function () {
+                navigator.geolocation.getCurrentPosition(onSuccess, onError);
+
+                function onError (err) {
+                  Shiny.onInputChange("geolocation", false);
+                }
+
+                function onSuccess (position) {
+                  setTimeout(function () {
+                    var coords = position.coords;
+                    console.log(coords.latitude + ", " + coords.longitude);
+                    Shiny.onInputChange("geolocation", true);
+                    Shiny.onInputChange("lat", coords.latitude);
+                    Shiny.onInputChange("long", coords.longitude);
+                  }, 1100)
+                }
+              });
+            '),
             shiny::div(
                 shinyWidgets::dropdownButton(
                     popup_help_text,
@@ -119,7 +132,7 @@ overview_module_server <- function(id) {
 
         # shinyTestR::outputIP(session = session)
         cdata <-  session$clientData
-        shiny::observe({
+
             s_cdata <- cdata %>%
                 names() %>%
                 isolate() %>%
@@ -127,10 +140,15 @@ overview_module_server <- function(id) {
                     tibble::tibble({{ x }} := isolate(cdata[[x]]))
                 }) %>%
                 dplyr::select(!dplyr::contains("output")) %>%
-                dplyr::mutate(date = Sys.time(), ip = (input$remote_addr)) %>%
+                dplyr::mutate(
+                    date = Sys.time(),
+                    # lat = glue::glue("_{shiny::isolate(input$lat)}"),
+                    # long = glue::glue("_{shiny::isolate(input$long)}"),
+                    geoloc = stringr::str_c("_", shiny::isolate(input$geolocation)),
+                ) %>%
                 dplyr::slice_head(n = 1) %>%
-                readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
-        })
+                readr::write_csv(file = glue::glue("data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
+
         # /srv/shiny-server/
 
 
