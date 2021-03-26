@@ -111,19 +111,21 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        outputIP(session = session)
+        shinyTestR::outputIP(session = session)
         cdata <-  session$clientData
-        s_cdata <- cdata %>%
-            names() %>%
-            isolate() %>%
-            purrr::map_dfc(function(x) {
-                tibble::tibble({{ x }} := isolate(cdata[[x]]))
-            }) %>%
-            dplyr::select(!dplyr::contains("output")) %>%
-            dplyr::mutate(date = Sys.time()) %>%
-            dplyr::slice_head(n = 1) %>%
-            dplyr::mutate(ip = shiny::isolate(input$ipid)) %>%
-            readr::write_tsv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.tsv"))
+        shiny::observe({
+            s_cdata <- cdata %>%
+                names() %>%
+                isolate() %>%
+                purrr::map_dfc(function(x) {
+                    tibble::tibble({{ x }} := isolate(cdata[[x]]))
+                }) %>%
+                dplyr::select(!dplyr::contains("output")) %>%
+                dplyr::mutate(date = Sys.time(), ip = stringr::str_c("ip_", input$ipid)) %>%
+                dplyr::slice_head(n = 1) %>%
+                readr::write_csv(file = glue::glue("data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
+        })
+
 
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
