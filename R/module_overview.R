@@ -12,6 +12,12 @@ overview_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
+            div(style = "display: none;",
+                textInput("remote_addr", "remote_addr",
+                          if (!is.null(req[["HTTP_X_FORWARDED_FOR"]]))
+                              req[["HTTP_X_FORWARDED_FOR"]]
+                          else
+                              req[["REMOTE_ADDR"]])),
             shiny::div(
                 shinyWidgets::dropdownButton(
                     popup_help_text,
@@ -111,7 +117,7 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        shinyTestR::outputIP(session = session)
+        # shinyTestR::outputIP(session = session)
         cdata <-  session$clientData
         shiny::observe({
             s_cdata <- cdata %>%
@@ -121,10 +127,11 @@ overview_module_server <- function(id) {
                     tibble::tibble({{ x }} := isolate(cdata[[x]]))
                 }) %>%
                 dplyr::select(!dplyr::contains("output")) %>%
-                dplyr::mutate(date = Sys.time(), ip = stringr::str_c("ip_", input$ipid)) %>%
+                dplyr::mutate(date = Sys.time(), ip = (input$remote_addr)) %>%
                 dplyr::slice_head(n = 1) %>%
-                readr::write_csv(file = glue::glue("data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
+                readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
         })
+        # /srv/shiny-server/
 
 
         output$mutation_positions <- shiny::renderUI({
