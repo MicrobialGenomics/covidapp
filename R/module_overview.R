@@ -12,25 +12,6 @@ overview_module_ui <- function(id) {
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            shiny::tags$script('
-              $(document).ready(function () {
-                navigator.geolocation.getCurrentPosition(onSuccess, onError);
-
-                function onError (err) {
-                  Shiny.onInputChange("geolocation", false);
-                }
-
-                function onSuccess (position) {
-                  setTimeout(function () {
-                    var coords = position.coords;
-                    console.log(coords.latitude + ", " + coords.longitude);
-                    Shiny.onInputChange("geolocation", true);
-                    Shiny.onInputChange("lat", coords.latitude);
-                    Shiny.onInputChange("long", coords.longitude);
-                  }, 1100)
-                }
-              });
-            '),
             shiny::div(
                 shinyWidgets::dropdownButton(
                     popup_help_text,
@@ -131,23 +112,18 @@ overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
         # shinyTestR::outputIP(session = session)
-        cdata <-  session$clientData
+        cdata <-  geoloc::wtfismyip()
 
-            s_cdata <- cdata %>%
-                names() %>%
-                isolate() %>%
-                purrr::map_dfc(function(x) {
-                    tibble::tibble({{ x }} := isolate(cdata[[x]]))
-                }) %>%
-                dplyr::select(!dplyr::contains("output")) %>%
-                dplyr::mutate(
-                    date = Sys.time(),
-                    # lat = glue::glue("_{shiny::isolate(input$lat)}"),
-                    # long = glue::glue("_{shiny::isolate(input$long)}"),
-                    geoloc = stringr::str_c("_", shiny::isolate(input$geolocation)),
-                ) %>%
-                dplyr::slice_head(n = 1) %>%
-                readr::write_csv(file = glue::glue("data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
+        s_cdata <- cdata %>%
+            names() %>%
+            isolate() %>%
+            purrr::map_dfc(function(x) {
+                tibble::tibble({{ x }} := isolate(cdata[[x]]))
+            }) %>%
+            dplyr::select(!dplyr::contains("output")) %>%
+            dplyr::mutate(date = Sys.time()) %>%
+            dplyr::slice_head(n = 1) %>%
+            readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
 
         # /srv/shiny-server/
 

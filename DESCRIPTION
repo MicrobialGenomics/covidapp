@@ -41,8 +41,11 @@ Imports:
     DT,
     lubridate,
     purrr,
-    shinycssloaders
+    shinycssloaders,
+    geoloc
 Suggests: 
     roxygen2
+Remotes:
+    github::ColinFay/geoloc
 Depends: 
     R (>= 2.10)
