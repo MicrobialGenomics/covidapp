@@ -554,8 +554,8 @@ plot_mutation_line <- function(inp_list,
     pp <- prepro %>%
         ggplot(aes(week_num, freq, colour = mutation, fill = mutation)) +
         stat_smooth(
-            method = "loess",
-            formula = "y ~ x",
+            method = "gam",
+            formula = y ~ s(x),
             size = 0.8,
             alpha = 0.5,
             lty = 0
