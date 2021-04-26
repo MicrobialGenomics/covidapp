@@ -270,8 +270,8 @@ plot_variant_line <- function(df, mt, variant, var_col) {
     pp <- prepro %>%
         ggplot(aes(week_num, freq, colour = varcol, fill = varcol)) +
         stat_smooth(
-            method = "loess",
-            formula = "y ~ x",
+            method = "gam",
+            formula = y ~ s(x),
             size = 0.8,
             alpha = 0.5,
             lty = 0
