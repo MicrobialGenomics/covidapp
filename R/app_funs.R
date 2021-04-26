@@ -118,6 +118,18 @@ server <- function() {
 
         shinyjs::runjs('document.title = "CovidTag"')
 
+        # cdata <-  geoloc::wtfismyip()
+        # s_cdata <- cdata %>%
+        #     names() %>%
+        #     isolate() %>%
+        #     purrr::map_dfc(function(x) {
+        #         tibble::tibble({{ x }} := isolate(cdata[[x]]))
+        #     }) %>%
+        #     dplyr::select(!dplyr::contains("output")) %>%
+        #     dplyr::mutate(date = Sys.time()) %>%
+        #     dplyr::slice_head(n = 1) %>%
+        #     readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
+
         ## Module tab 1
         overview_module_server("tab1")
 
