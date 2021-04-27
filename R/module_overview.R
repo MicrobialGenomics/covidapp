@@ -40,7 +40,7 @@ overview_module_ui <- function(id) {
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:  "),
                 choices = c(
-                    "NCClade" = "NCClade",
+                    "Nextclade" = "NCClade",
                     "Pangolin" = "pangolin_lineage",
                     "Mutation" = "mutation"
                 ),
@@ -130,7 +130,7 @@ overview_module_server <- function(id) {
                 clades <- dplyr::pull(df_over, NCClade) %>% forcats::fct_infreq() %>% levels()
             } else if (input$var_annot == "pangolin_lineage") {
                 clades <- dplyr::pull(df_over, pangolin_lineage) %>%
-                    forcats::fct_infreq() %>% levels() %>% .[1:11]
+                    forcats::fct_infreq() %>% levels() # %>% .[1:11]
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 clades <- mt %>%
