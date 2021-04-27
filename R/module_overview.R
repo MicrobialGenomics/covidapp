@@ -209,12 +209,14 @@ overview_module_server <- function(id) {
             glue::glue("Based on reported sample collection date")
         })
 
+        file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
+        annot <- readr::read_tsv(file, col_types = readr::cols()) %>%
+            dplyr::mutate(Description = stringr::str_remove_all(Description, "More information .*"))
 
         output$info <- shiny::renderUI({
             shiny::req(input$variant, input$var_annot == "pangolin_lineage")
-            file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
 
-            var_description <- readr::read_tsv(file, col_types = readr::cols()) %>%
+            var_description <- annot %>%
                 dplyr::filter(Lineage == input$variant) %>%
                 dplyr::pull(Description)
 
