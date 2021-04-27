@@ -26,7 +26,7 @@ overview_module_ui <- function(id) {
             shiny::uiOutput(outputId = ns("region")),
             shinyWidgets::radioGroupButtons(
                 inputId = ns("stack_p1"),
-                label = shiny::h5("Pick y-axis transfomation:"),
+                label = shiny::h5("Pick y-axis transfomation: "),
                 choices = c("stack" = "counts", "fill" = "freq"),
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
@@ -38,7 +38,7 @@ overview_module_ui <- function(id) {
             ),
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
-                label = shiny::h5("Pick Variant Annotation:"),
+                label = shiny::h5("Pick Variant Annotation:  "),
                 choices = c(
                     "NCClade" = "NCClade",
                     "Pangolin" = "pangolin_lineage",
@@ -53,7 +53,8 @@ overview_module_ui <- function(id) {
                 justified = TRUE
             ),
             shiny::uiOutput(outputId = ns("mutation_positions")),
-            shiny::uiOutput(outputId = ns("option_clades"))
+            shiny::uiOutput(outputId = ns("option_clades")),
+            shiny::uiOutput(outputId = ns("info"))
         ),
 
         # main
@@ -111,23 +112,6 @@ overview_module_ui <- function(id) {
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        # shinyTestR::outputIP(session = session)
-        cdata <-  geoloc::wtfismyip()
-
-        s_cdata <- cdata %>%
-            names() %>%
-            isolate() %>%
-            purrr::map_dfc(function(x) {
-                tibble::tibble({{ x }} := isolate(cdata[[x]]))
-            }) %>%
-            dplyr::select(!dplyr::contains("output")) %>%
-            dplyr::mutate(date = Sys.time()) %>%
-            dplyr::slice_head(n = 1) %>%
-            readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
-
-        # /srv/shiny-server/
-
-
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(
@@ -146,7 +130,7 @@ overview_module_server <- function(id) {
                 clades <- dplyr::pull(df_over, NCClade) %>% forcats::fct_infreq() %>% levels()
             } else if (input$var_annot == "pangolin_lineage") {
                 clades <- dplyr::pull(df_over, pangolin_lineage) %>%
-                    forcats::fct_infreq() %>% levels() %>% .[1:14]
+                    forcats::fct_infreq() %>% levels() %>% .[1:11]
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 clades <- mt %>%
@@ -154,7 +138,6 @@ overview_module_server <- function(id) {
             }
         }) %>%
             shiny::bindCache(input$var_annot, input$mutation_positions)
-
 
         output$option_clades <- shiny::renderUI({
             shinyWidgets::pickerInput(
@@ -172,7 +155,7 @@ overview_module_server <- function(id) {
             shiny::req(exists("df_over"))
             shinyWidgets::pickerInput(
                 inputId = session$ns("region"),
-                label = shiny::h5("Region for left plots"),
+                label = shiny::h5("Region for left and right plots"),
                 choices = list(
                     "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
                     "Right Plot" = stringr::str_c(c("Spain", df_over$acom_name %>% unique()), " ")
@@ -226,6 +209,23 @@ overview_module_server <- function(id) {
             glue::glue("Based on reported sample collection date")
         })
 
+
+        output$info <- shiny::renderUI({
+            shiny::req(input$variant, input$var_annot == "pangolin_lineage")
+            file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
+
+            var_description <- readr::read_tsv(file, col_types = readr::cols()) %>%
+                dplyr::filter(Lineage == input$variant) %>%
+                dplyr::pull(Description)
+
+            shiny::div(
+                shiny::h5(var_description, style = "color: darkgray; text-align: justify; text-justify: inter-word;"),
+                shiny::tags$a(
+                    href = stringr::str_c("https://outbreak.info/situation-reports?pango=", input$variant),
+                    shiny::h5("Click for more information!", style = "color: darkgray")
+                )
+            )
+        })
 
         # Plots -------------------------------------------------------------------
         ## Plot 1
@@ -395,3 +395,7 @@ popup_help_text = shiny::fluidPage(
         shiny::br(),
     )
 )
+
+
+
+
