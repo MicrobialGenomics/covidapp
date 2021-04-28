@@ -2,13 +2,13 @@
 % Please edit documentation in R/module_map.R
 \name{map_module_server}
 \alias{map_module_server}
-\title{Title}
+\title{Server module map}
 \usage{
 map_module_server(id)
 }
 \arguments{
-\item{id}{identification}
+\item{id}{module id}
 }
 \description{
-Title
+Server module map
 }
