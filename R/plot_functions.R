@@ -4,10 +4,10 @@
 #' @param ca all or autonomous community
 #' @param var_anno variant annotation column. ex. "NCClade" or "pangolin_lineage"
 #'
+#' @import ggplot2
 #' @return tibble
 #' @export
 prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
-
     if (var_anno == "pangolin_lineage") {
         to_retain <- df %>%
             dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
@@ -17,11 +17,12 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
     }
 
     df <- df %>%
-        dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno)) %>% forcats::fct_rev())
+        dplyr::mutate(
+            clade = forcats::fct_infreq(!!sym(var_anno)) %>% forcats::fct_rev()
+        )
 
     if (ca != "Spain") { df <- df %>% dplyr::filter(acom_name == ca) }
 
-    # Pre-processing data
     df %>%
         tidyr::drop_na(week_num) %>%
         dplyr::mutate(
@@ -33,11 +34,13 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
         dplyr::group_by(week_num, .drop = FALSE) %>%
         dplyr::select(week_num, clade) %>%
         dplyr::count(clade, .drop = FALSE) %>%
-        dplyr::summarise(freq = n / sum(n),
-                         pct = freq * 100,
-                         counts = n,
-                         sum = sum(counts),
-                         clade = clade)
+        dplyr::summarise(
+            freq = n / sum(n),
+            pct = freq * 100,
+            counts = n,
+            sum = sum(counts),
+            clade = clade
+        )
 }
 
 #' Plot variants
@@ -60,18 +63,15 @@ plot_vairants <- function(df,
                           clade = NULL,
                           plotly = TRUE) {
 
-    # filter clade
     if (!is.null(clade)) {
         df <- df %>% dplyr::filter(clade %in% clade)
     }
 
-    # Text label for plotly
     df <- df %>%
         dplyr::mutate(
             text = stringr::str_c(
                 "Clade:", clade,
                 "<br>Frequency:", round(freq, 2),
-                #"<br>percentage:", round(pct, 2),
                 "<br>Counts:", counts,
                 "<br>Total counts:", sum,
                 "<br>Date:", week_num,
@@ -79,7 +79,6 @@ plot_vairants <- function(df,
             )
         )
 
-    # Define plot class
     if (type == "density") {
         pp <- df %>%
             ggplot(aes(week_num, !!sym(var), fill = clade, group = clade, text = text)) +
@@ -93,7 +92,6 @@ plot_vairants <- function(df,
     t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
     t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
 
-     # Common plot
     pp <- pp +
         theme_minimal(base_rect_size = 0, base_size = 12) +
         labs(x = "", y = t_2)
@@ -130,7 +128,6 @@ plot_vairants <- function(df,
 #' @return plotly
 #' @export
 efforts_by_center <- function(df, pos = "stack") {
-    ## Edit center names
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
         dplyr::mutate(
@@ -153,7 +150,6 @@ efforts_by_center <- function(df, pos = "stack") {
     t_1 <- dplyr::if_else(pos == "fill", "Frequency", "Counts")
     t_2 <- dplyr::if_else(pos == "fill", "Frequency", "Counts by Center")
 
-    ## Plotting by position type
     pp <- prepro %>%
         dplyr::mutate(center = forcats::fct_infreq(sub_center)) %>%
         ggplot(aes(x = week_num , fill = center)) +
@@ -169,13 +165,12 @@ efforts_by_center <- function(df, pos = "stack") {
     }
 
     plotly::ggplotly(pp, tooltip = c("fill", "count")) %>%
+        plotly::config(displaylogo = FALSE) %>%
         plotly::layout(
             hovermode = 'compare',
-            legend = list(orientation = 'h', y = -10)
-        ) %>%
-        plotly::config(displaylogo = FALSE)
+                       legend = list(orientation = 'h', y = -10)
+        )
 }
-
 
 #' Plot variant by C.A.
 #'
@@ -186,11 +181,10 @@ efforts_by_center <- function(df, pos = "stack") {
 #' @return plotly
 #' @export
 plot_variant_by_com <- function(df, variant, var_col) {
-    # Preparing data
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
-        dplyr::mutate(varcol = !!sym(var_col)) %>%
         dplyr::mutate(
+            varcol = !!sym(var_col),
             varcol = factor(varcol, levels = unique(varcol)),
             acom_name = factor(acom_name, levels = unique(acom_name)),
             date = format(collection_date, "%y-%W"),
@@ -212,21 +206,17 @@ plot_variant_by_com <- function(df, variant, var_col) {
         dplyr::filter(varcol == variant) %>%
         dplyr::mutate(text = stringr::str_c("C.A:", acom_name, "<br>Frequency:", pct, sep = " "))
 
-    # Plot data
     pp <- prepro %>%
         dplyr::rename("C.A" = "acom_name") %>%
         ggplot(aes(week_num, freq, colour = C.A, group = C.A, text = text)) +
-        stat_smooth(se = F, method = "loess", formula = "y ~ x", size = 0.8,
-                    alpha = 0.5, geom = "line", lty = 5) +
+        stat_smooth(se = F, method = "gam", formula = y ~ s(x), size = 0.8, alpha = 0.5, geom = "line", lty = 5) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.3, shape = 21) +
         scale_colour_manual(values = pals::polychrome() %>% as.vector(), name = "") +
-        scale_y_continuous(labels = scales::percent,
-                           limits = c(0, 1.05), breaks = seq(0, 1, by = 0.25)) +
+        scale_y_continuous(labels = scales::percent, limits = c(0, 1.05), breaks = seq(0, 1, by = 0.25)) +
         labs(x = "", y = "Frequency") +
         theme_minimal(base_rect_size = 0) +
         theme(legend.position = "none")
 
-    # Convert to plotly
     plotly::ggplotly(pp, tooltip = "colour") %>%
         plotly::layout(hovermode = 'closest') %>%
         plotly::config(displaylogo = FALSE)
@@ -242,11 +232,10 @@ plot_variant_by_com <- function(df, variant, var_col) {
 #' @return plotly
 #' @export
 plot_variant_line <- function(df, mt, variant, var_col) {
-    # Preparing data
     prepro <- df %>%
         tidyr::drop_na(week_num) %>%
-        dplyr::mutate(varcol = !!sym(var_col)) %>%
         dplyr::mutate(
+            varcol = !!sym(var_col),
             varcol = factor(varcol, levels = unique(varcol)),
             acom_name = factor(acom_name, levels = unique(acom_name)),
             date = format(collection_date, "%y-%W"),
@@ -266,16 +255,9 @@ plot_variant_line <- function(df, mt, variant, var_col) {
         tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
         dplyr::filter(varcol == variant)
 
-    # Plot data
     pp <- prepro %>%
         ggplot(aes(week_num, freq, colour = varcol, fill = varcol)) +
-        stat_smooth(
-            method = "gam",
-            formula = y ~ s(x),
-            size = 0.8,
-            alpha = 0.5,
-            lty = 0
-        ) +
+        stat_smooth(method = "gam", formula = y ~ s(x), size = 0.8, alpha = 0.5, lty = 0) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
         scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
         scale_fill_manual(values = "#FEE08B") +
@@ -284,13 +266,12 @@ plot_variant_line <- function(df, mt, variant, var_col) {
         theme_minimal(base_rect_size = 0) +
         theme(legend.position = "none")
 
-    # Convert to plotly
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
 }
 
 
-#' Title
+#' Preprocessing mutations
 #'
 #' @param df df
 #' @param ca CA or spain
@@ -347,7 +328,7 @@ prepro_mutations <- function(df, ca = "Spain") {
 }
 
 
-#' Title
+#' Plot mutations
 #'
 #' @param df df
 #' @param var counts or freq
@@ -365,10 +346,9 @@ plot_mutations <- function(df,
 
     df <- df %>% dplyr::filter(stringr::str_detect(mutation, mut_pos))
 
-    # Text label for plotly
     df <- df %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(#clade = factor(clade, levels = ord),
+        dplyr::mutate(
             text = stringr::str_c(
                 "Mutation:", mutation,
                 "<br>frequency:", round(freq, 2),
@@ -376,7 +356,8 @@ plot_mutations <- function(df,
                 "<br>count:", counts,
                 "<br>total:", sum,
                 sep = " "
-            ))
+            )
+        )
 
     t_1 <- dplyr::if_else(var == "freq", "Frequency", "Counts")
     t_2 <- dplyr::if_else(var == "freq", "Frequency", "Counts by Variant")
@@ -393,20 +374,21 @@ plot_mutations <- function(df,
 
     pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
              "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+
     pp <- pp + scale_fill_manual(values = rev(pal))
 
     if (isTRUE(plotly)) {
         pp <- plotly::ggplotly(pp, tooltip = "text") %>%
+            plotly::config(displaylogo = FALSE) %>%
             plotly::layout(
                 hovermode = 'closest',
                 legend = list(orientation = 'h', y = -0.2)
-            ) %>%
-            plotly::config(displaylogo = FALSE)
+            )
     }
     pp
 }
 
-#' Title
+#' Chexk mutations
 #'
 #' @param mut mutation columns
 #' @param all_pos all positions
@@ -428,8 +410,7 @@ check_mutations <- function(mut, all_pos) {
     res <- list(c(mutations, filt_wt))
 }
 
-
-#' Title
+#' Plot mutations 2
 #'
 #' @param df df
 #' @param region C.A or Spain
@@ -450,7 +431,6 @@ plot_mutations_2 <- function(inp_list,
     gene <- stringr::str_remove_all(mut_pos, ":.*")
     pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
 
-    ## Region names conversion
     if (region == "Catalunya") { reg = "Cataluña" } else { reg = region }
 
     df <- inp_list[[gene]][[pos]][[reg]] %>%
@@ -508,7 +488,7 @@ plot_mutations_2 <- function(inp_list,
     pp
 }
 
-#' Title
+#' Plot mutation line
 #'
 #' @param inp_list mutation list
 #' @param region region
@@ -525,7 +505,6 @@ plot_mutation_line <- function(inp_list,
     gene <- stringr::str_remove_all(mut_pos, ":.*")
     pos <- as.numeric(stringr::str_remove_all(mut_pos, ".*:"))
 
-    ## Region names conversion
     if (region == "Catalunya") { reg = "Cataluña" } else { reg = region }
 
     na_replace = list()
@@ -550,7 +529,6 @@ plot_mutation_line <- function(inp_list,
         dplyr::ungroup() %>%
         dplyr::filter(mutation == mut)
 
-    # Plot data
     pp <- prepro %>%
         ggplot(aes(week_num, freq, colour = mutation, fill = mutation)) +
         stat_smooth(
@@ -568,12 +546,11 @@ plot_mutation_line <- function(inp_list,
         theme_minimal(base_rect_size = 0) +
         theme(legend.position = "none")
 
-    # Convert to plotly
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
 }
 
-#' Title
+#' empty plot
 #'
 #' @param msg output message
 #'
@@ -589,7 +566,7 @@ empty_plot <- function(msg = "No data for this region") {
         plotly::config(displaylogo = FALSE)
 }
 
-#' Title
+#' efforts all
 #'
 #' @param df df
 #'
@@ -598,13 +575,11 @@ empty_plot <- function(msg = "No data for this region") {
 #'
 #' @import ggplot2
 efforts_all <- function(df) {
-    ## Edit center names
     prepro <- df %>%
         dplyr::count(date) %>%
         dplyr::arrange(date) %>%
         dplyr::mutate(cum = cumsum(n))
 
-    ## Plotting by position type
     by_date <- prepro %>%
         ggplot(aes(x = date, y = n)) +
         geom_bar(stat = "identity", colour = NA, fill = "#FDAE61", alpha = 0.7) +
@@ -621,6 +596,7 @@ efforts_all <- function(df) {
         labs(x = "Date", y = "Comulative sequences")
 
     coeff <- round(max(prepro$cum) / max(prepro$n))
+
     dual <- prepro %>%
         ggplot(aes(x = date)) +
         geom_bar(aes(y = n), stat = "identity", colour = NA, fill = "#FDAE61", alpha = 0.8) +

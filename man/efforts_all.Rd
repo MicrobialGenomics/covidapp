@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{efforts_all}
 \alias{efforts_all}
-\title{Title}
+\title{efforts all}
 \usage{
 efforts_all(df)
 }
@@ -13,5 +13,5 @@ efforts_all(df)
 ggplot
 }
 \description{
-Title
+efforts all
 }

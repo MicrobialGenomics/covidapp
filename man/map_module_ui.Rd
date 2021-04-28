@@ -2,7 +2,7 @@
 % Please edit documentation in R/module_map.R
 \name{map_module_ui}
 \alias{map_module_ui}
-\title{Title}
+\title{UI module map}
 \usage{
 map_module_ui(id)
 }
@@ -10,5 +10,5 @@ map_module_ui(id)
 \item{id}{identification}
 }
 \description{
-Title
+UI module map
 }

@@ -1,7 +1,6 @@
-#' Title
+#' UI module map
 #'
 #' @param id identification
-#'
 #' @export
 map_module_ui <- function(id) {
     ns <- shiny::NS(id)
@@ -17,25 +16,30 @@ map_module_ui <- function(id) {
             id = "controls", class = "panel panel-default",
             top = 180, left = 55, width = 300, fixed = TRUE,
             draggable = TRUE, height = "auto",
+
             shiny::span(shiny::tags$i(
                 shiny::h6(shiny::textOutput(outputId = ns('ver'))),
                 shiny::h6(
-                        "Data from GISAID Initiative. Note, that it is important
+                    "Data from GISAID Initiative. Note, that it is important
                         not to assume that shown data are necessarily
                         representative of the all region due to a potential non
                         uniform sampling."
                 )
             ), style = "color:#045a8d; text-align: justify;"),
             shiny::br(),
+
             shiny::h4(shiny::textOutput(outputId = ns("acum_seq")), align = "right"),
             shiny::h4(shiny::textOutput(outputId = ns("week_seq")), align = "right"),
             shiny::h6(shiny::textOutput(outputId = ns("sel_week")), align = "right"),
             shiny::h6(shiny::textOutput(outputId = ns("count_ca")), align = "right"),
+
             shiny::plotOutput(
                 outputId = ns("plot_counts"),
                 height = "150px",
                 width = "100%"
-            ) %>% shinycssloaders::withSpinner(type = 7, color = "#ABD9E9", hide.ui = FALSE),
+            ) %>%
+                shinycssloaders::withSpinner(type = 7, color = "#ABD9E9", hide.ui = FALSE),
+
             shiny::plotOutput(
                 outputId = ns("plot_cumsum"),
                 height = "150px",
@@ -43,6 +47,7 @@ map_module_ui <- function(id) {
             ),
 
             shiny::uiOutput(outputId = ns("plot_date")),
+
             shinyWidgets::materialSwitch(
                 inputId = ns("norm"),
                 label = "per 1e5 inhabitant correction",
@@ -74,15 +79,14 @@ map_module_ui <- function(id) {
     )
 }
 
-
-#' Title
+#' Server module map
 #'
-#' @param id identification
-#'
+#' @param id module id
 #' @export
 map_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
+        ## Printing data version
         output$ver <- shiny::renderText({
             list.files("data", pattern = "MergedData_spain_") %>%
                 stringr::str_remove_all(".*n_|.rds")
@@ -105,11 +109,16 @@ map_module_server <- function(id) {
         ## Filter by date
         f_df <- shiny::reactive({
             shiny::req(input$plot_date, length(input$plot_date) == 2)
-            format_date_min <- as.Date(input$plot_date[[1]], "%d %b %y")
-            format_date_max <- as.Date(input$plot_date[[2]], "%d %b %y")
-            if (format_date_min == format_date_max) { format_date_max <- format_date_max + 7 }
+            format_date_min <- input$plot_date[[1]] %>% as.Date("%d %b %y")
+            format_date_max <- input$plot_date[[2]] %>% as.Date("%d %b %y")
+
+            if (format_date_min == format_date_max) {
+                format_date_max <- format_date_max + 7
+            }
+
             df_map$dat %>%
-                dplyr::filter(date <= format_date_max & date >= format_date_min)
+                dplyr::filter(date <= format_date_max &
+                                  date >= format_date_min)
         })
 
         ## Base map
@@ -137,7 +146,11 @@ map_module_server <- function(id) {
             shiny::req(input$plot_date, f_df())
             format_date_min <- input$plot_date[[1]] %>% as.Date("%d %b %y") %>% paste()
             format_date_max <- input$plot_date[[2]] %>% as.Date("%d %b %y") %>% paste()
-            if (format_date_min == format_date_max) { format_date_max <- paste(as.Date(format_date_max) + 7) }
+
+            if (format_date_min == format_date_max) {
+                format_date_max <- paste(as.Date(format_date_max) + 7)
+            }
+
             map <- df_map$bs_map$base_map
             p <- map$acom_name %>%
                 purrr::set_names() %>%
@@ -148,12 +161,20 @@ map_module_server <- function(id) {
                         df <- f_df() %>% dplyr::filter(acom_name == x)
 
                         if (nrow(df) < 5) {
-                            popup <- tibble::tibble(x = 1, y = 1, text = "No data for this region on selected dates") %>%
-                                ggplot(aes(x, y, label = text)) + theme_void(base_family = 20) + geom_text()
+                            popup <- tibble::tibble(
+                                x = 1,
+                                y = 1,
+                                text = "No data for this region on selected dates"
+                            ) %>%
+                                ggplot(aes(x, y, label = text)) +
+                                theme_void(base_family = 20) +
+                                geom_text()
+
                         } else {
                             popup <- df %>% efforts_all() %>% .[["dual"]]
                         }
                     }
+
                     popup
                 })
 
@@ -200,15 +221,15 @@ map_module_server <- function(id) {
             }
         })
 
-        ## Absolute panel reactivity
-        # Total sequences
+        # Absolute panel reactivity
+        ## Total sequences
         output$acum_seq <- shiny::renderText({
             acum_seq <- prettyNum(nrow(f_df()), big.mark = ",")
             glue::glue("{acum_seq} Total Sequences")
         }) %>%
             shiny::bindCache(f_df())
 
-        # New sequences selected date
+        ## New sequences selected date
         output$week_seq <- shiny::renderText({
             week_seq <- f_df() %>%
                 dplyr::filter(date == max(date)) %>%
@@ -219,7 +240,7 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(f_df())
 
-        # Selected date
+        ## Selected date
         output$sel_week <- shiny::renderText({
             min <- f_df()$collection_date %>% min() %>% format("%d %b %y")
             max <- f_df()$collection_date %>% max() %>% format("%d %b %y")
@@ -227,7 +248,7 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(f_df())
 
-        # Affected C.A. counts
+        ## Affected C.A. counts
         output$count_ca <- shiny::renderText({
             count_ca <- f_df() %>%
                 dplyr::count(acom_name) %>%
@@ -238,14 +259,14 @@ map_module_server <- function(id) {
         }) %>%
             shiny::bindCache(f_df())
 
-        # Plot counts
+        ## Plot counts
         output$plot_counts <- shiny::renderPlot({
             shiny::req(f_df())
             f_df() %>% efforts_all() %>% .[["pp_counts"]]
         }) %>%
             shiny::bindCache(f_df())
 
-        # Plot commutative counts
+        ## Plot commutative counts
         output$plot_cumsum <- shiny::renderPlot({
             shiny::req(f_df())
             f_df() %>% efforts_all() %>% .[["pp_cumsum"]]

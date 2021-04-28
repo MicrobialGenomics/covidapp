@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{plot_mutation_line}
 \alias{plot_mutation_line}
-\title{Title}
+\title{Plot mutation line}
 \usage{
 plot_mutation_line(inp_list, region = "Spain", mut_pos = "S:1251", mut = "V")
 }
@@ -19,5 +19,5 @@ plot_mutation_line(inp_list, region = "Spain", mut_pos = "S:1251", mut = "V")
 plotly
 }
 \description{
-Title
+Plot mutation line
 }

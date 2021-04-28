@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{prepro_mutations}
 \alias{prepro_mutations}
-\title{Title}
+\title{Preprocessing mutations}
 \usage{
 prepro_mutations(df, ca = "Spain")
 }
@@ -15,5 +15,5 @@ prepro_mutations(df, ca = "Spain")
 df
 }
 \description{
-Title
+Preprocessing mutations
 }

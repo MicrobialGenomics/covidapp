@@ -1,16 +1,11 @@
-#' Title
+#' UI module per C.A.
 #'
-#' @param id identification
-#'
-#' @import ggplot2
-#'
+#' @param id module id
 #' @export
 per_ca_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
         headerPanel = shiny::headerPanel(""),
-
-        # sidebar
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
             shiny::div(
@@ -24,7 +19,9 @@ per_ca_module_ui <- function(id) {
                 ), style = "float:right"
             ),
             shiny::br(),
+
             shiny::uiOutput(outputId = ns("option_ca")),
+
             shinyWidgets::radioGroupButtons(
                 inputId = ns("stack_p1"),
                 label = shiny::h5("Pick y-axis transfomation:"),
@@ -37,6 +34,7 @@ per_ca_module_ui <- function(id) {
                     no = tags$i(class = "fa fa-square-o")
                 )
             ),
+
             shiny::h5("Pick palette:"),
             shinyWidgets::sliderTextInput(
                 inputId = ns("pal_p1"),
@@ -49,6 +47,7 @@ per_ca_module_ui <- function(id) {
                         rownames()
                 )
             ),
+
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:"),
@@ -63,7 +62,6 @@ per_ca_module_ui <- function(id) {
             )
         ),
 
-        # main
         mainPanel = shiny::mainPanel(
             width = 9,
             shiny::uiOutput(outputId = ns("plots")) %>%
@@ -72,7 +70,7 @@ per_ca_module_ui <- function(id) {
     )
 }
 
-#' Title
+#' Server module per C.A.
 #'
 #' @param id identification
 #'
@@ -80,14 +78,24 @@ per_ca_module_ui <- function(id) {
 per_ca_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
-        com_aut <- df_ca %>% dplyr::pull(acom_name) %>% unique() %>% sort() %>% c("Spain", .)
+        com_aut <- df_ca %>%
+            dplyr::pull(acom_name) %>%
+            unique() %>%
+            sort() %>%
+            c("Spain", .)
 
         output$option_ca <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("option_ca"),
                 label = shiny::h5("Autonomous Community:"),
-                choices = c("Spain", df_ca$acom_name %>% forcats::fct_infreq() %>% levels()),
-                selected = c("Spain", df_ca$acom_name %>% forcats::fct_infreq() %>% levels()),
+                choices = c(
+                    "Spain",
+                    df_ca$acom_name %>% forcats::fct_infreq() %>% levels()
+                ),
+                selected = c(
+                    "Spain",
+                    df_ca$acom_name %>% forcats::fct_infreq() %>% levels()
+                ),
                 multiple = TRUE
             )
         })
@@ -123,7 +131,6 @@ per_ca_module_server <- function(id) {
             })
         }) %>%
             shiny::bindCache(input$option_ca)
-
     })
 }
 

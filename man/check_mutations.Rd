@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{check_mutations}
 \alias{check_mutations}
-\title{Title}
+\title{Chexk mutations}
 \usage{
 check_mutations(mut, all_pos)
 }
@@ -15,5 +15,5 @@ check_mutations(mut, all_pos)
 list
 }
 \description{
-Title
+Chexk mutations
 }

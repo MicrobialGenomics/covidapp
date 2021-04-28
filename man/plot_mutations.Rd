@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{plot_mutations}
 \alias{plot_mutations}
-\title{Title}
+\title{Plot mutations}
 \usage{
 plot_mutations(
   df,
@@ -27,5 +27,5 @@ plot_mutations(
 plot
 }
 \description{
-Title
+Plot mutations
 }

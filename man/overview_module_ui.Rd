@@ -2,13 +2,13 @@
 % Please edit documentation in R/module_overview.R
 \name{overview_module_ui}
 \alias{overview_module_ui}
-\title{Title}
+\title{UI module overview}
 \usage{
 overview_module_ui(id)
 }
 \arguments{
-\item{id}{identification}
+\item{id}{module id}
 }
 \description{
-Title
+UI module overview
 }

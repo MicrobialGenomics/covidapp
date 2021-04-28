@@ -22,12 +22,10 @@ Imports:
     tidyr,
     ggplot2,
     stringi,
-    wakefield,
     shinyjs,
     shinythemes,
     leaflet,
     rgdal,
-    usethis,
     rlang (>= 0.1.2),
     magrittr,
     shinyWidgets,
@@ -41,11 +39,8 @@ Imports:
     DT,
     lubridate,
     purrr,
-    shinycssloaders,
-    geoloc
+    shinycssloaders
 Suggests: 
     roxygen2
-Remotes:
-    github::ColinFay/geoloc
 Depends: 
     R (>= 2.10)
