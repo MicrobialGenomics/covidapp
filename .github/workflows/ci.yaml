@@ -63,3 +63,4 @@ jobs:
           no-cache: true
           tags: |
             microbialgenomics/covidtag:latest
+
