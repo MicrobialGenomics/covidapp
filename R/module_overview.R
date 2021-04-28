@@ -182,7 +182,15 @@ overview_module_server <- function(id) {
         file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
         annot <- file %>%
             readr::read_tsv(col_types = readr::cols()) %>%
-            dplyr::mutate(Description = stringr::str_remove_all(Description, "More information .*"))
+            dplyr::mutate(
+                Description = stringr::str_remove_all(Description, " More information .*"),
+                Description = dplyr::if_else(
+                    condition = stringr::str_detect(Description, "[.]$"),
+                    true = Description,
+                    false = stringr::str_c(Description, ".")
+                ),
+                Description = stringr::str_c(Description, " *")
+            )
 
         output$info <- shiny::renderUI({
             shiny::req(input$variant, input$var_annot == "pangolin_lineage")
@@ -191,14 +199,26 @@ overview_module_server <- function(id) {
                 dplyr::pull(Description)
 
             shiny::div(
-                shiny::h5(var_description, style = "color: darkgray; text-align: justify; text-justify: inter-word;"),
+                shiny::h5(
+                    var_description,
+                    style = "color: gray; text-align: justify; text-justify: inter-word;"
+                ),
                 shiny::tags$a(
                     href = stringr::str_c(
                         "https://outbreak.info/situation-reports?pango=",
                         input$variant
                     ),
-                    shiny::h5("Click for more information!", style = "color: darkgray")
+                    shiny::h5("Click for more information!", style = "color: gray")
+                ),
+                shiny::br(),
+                shiny::tags$a(
+                    href = "https://cov-lineages.org/index.html",
+                    shiny::h6(
+                        "* Variant description from PANGO lineages",
+                        style = "color: darkgray; text-align: justify; text-justify: inter-word;"
+                    )
                 )
+
             )
         })
 
