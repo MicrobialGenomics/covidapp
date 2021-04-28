@@ -14,6 +14,8 @@ plot_mutations_2(
 )
 }
 \arguments{
+\item{inp_list}{mutations list}
+
 \item{region}{C.A or Spain}
 
 \item{mut_pos}{position to plot}
@@ -23,8 +25,6 @@ plot_mutations_2(
 \item{pal}{mg or RColorBrewer palette}
 
 \item{plotly}{TRUE or FALSE}
-
-\item{df}{df}
 }
 \value{
 plot
