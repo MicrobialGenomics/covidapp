@@ -22,11 +22,13 @@ overview_module_ui <- function(id) {
             ),
             shiny::br(),
 
+            shiny::h5("Region for left and right plots"),
             shiny::uiOutput(outputId = ns("region")),
 
+            shiny::h5("Pick y-axis transfomation: "),
             shinyWidgets::radioGroupButtons(
                 inputId = ns("stack_p1"),
-                label = shiny::h5("Pick y-axis transfomation: "),
+                label = NULL,
                 choices = c("stack" = "counts", "fill" = "freq"),
                 checkIcon = list(
                     yes = tags$i(class = "fa fa-check-square"),
@@ -37,12 +39,26 @@ overview_module_ui <- function(id) {
                 justified = TRUE
             ),
 
+            shiny::h5(
+                "Pick Variant Annotation:  ",
+                shiny::div(
+                    shinyWidgets::dropdownButton(
+                        popup_variant_description,
+                        label = NULL,
+                        size = "xs",
+                        width = "1000px",
+                        status = "warning",
+                        icon = shiny::icon("question")
+                    ),
+                    style = "align: right; float: right"
+                )
+            ),
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
-                label = shiny::h5("Pick Variant Annotation:  "),
+                label = NULL,
                 choices = c(
-                    "Nextclade" = "NCClade",
                     "Pangolin" = "pangolin_lineage",
+                    "Nextclade" = "NCClade",
                     "Mutation" = "mutation"
                 ),
                 checkIcon = list(
@@ -118,7 +134,7 @@ overview_module_server <- function(id) {
             shiny::req(exists("df_over"))
             shinyWidgets::pickerInput(
                 inputId = session$ns("region"),
-                label = shiny::h5("Region for left and right plots"),
+                label = NULL,
                 choices = list(
                     "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
                     "Right Plot" = stringr::str_c(c(
@@ -374,7 +390,7 @@ overview_module_server <- function(id) {
     })
 }
 
-popup_help_text = shiny::fluidPage(
+popup_help_text <- shiny::fluidPage(
     shiny::fixedRow(
         shiny::h3("Overview",
                   align = "center",
@@ -432,6 +448,58 @@ popup_help_text = shiny::fluidPage(
     )
 )
 
+popup_variant_description <- shiny::fluidPage(
+    shiny::fixedRow(
+        shiny::h3("Variant Classification",
+                  align = "center",
+                  style = "font-weight: bold; font-style: italic;"),
+        shiny::fixedRow(
+            shiny::h5(
+                "SARS-CoV-2 genome sequences obtained from samples are classified
+                into groups according their similarity in terms of mutations or
+                groups of mutations. Two classification systems are used in
+                CovidTag: NextClade and Pangolin. For instance, the so-called
+                “british” variant that is found to be dominant in most of Europe
+                is labeled as 501Y.V1 by NextClade and B.1.1.7 by Pangolin
+                classification systems. You can select any of the variants using
+                the drop-down menu for a brief description and a link to access
+                complete information. You can also select the “Mutation” option
+                to choose a single mutation and display how and when this
+                mutation has appeared in genomic sequences over time.",
+                style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
+            )
+        )
+    ),
+    shiny::fixedRow(shiny::div(
+        shiny::h5(
+            "PANGO lineages",
+            shiny::tags$a(
+                href = 'https://cov-lineages.org/pangolin.html',
+                shiny::img(
+                    src =  "images/pangolin.png",
+                    height = '50px',
+                    width = '50px'
+                )
+            ),
+            shiny::tags$a(
+                shiny::img(
+                    src =  "images/blank.png",
+                    height = '40px',
+                    width = '30px'
+                )
+            ),
+            shiny::tags$a(
+                href = 'https://clades.nextstrain.org',
+                shiny::img(
+                    src =  "images/NextClade.png",
+                    height = '40px',
+                    width = '140px'
+                )
+            ),
+            align = "center"
+        )
+    ))
+)
 
 
 
