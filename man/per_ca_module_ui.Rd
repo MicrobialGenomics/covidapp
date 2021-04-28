@@ -2,13 +2,13 @@
 % Please edit documentation in R/module_per_ca.R
 \name{per_ca_module_ui}
 \alias{per_ca_module_ui}
-\title{Title}
+\title{UI module per C.A.}
 \usage{
 per_ca_module_ui(id)
 }
 \arguments{
-\item{id}{identification}
+\item{id}{module id}
 }
 \description{
-Title
+UI module per C.A.
 }
