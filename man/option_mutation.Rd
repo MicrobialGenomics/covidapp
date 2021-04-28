@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{option_mutation}
 \alias{option_mutation}
-\title{Title}
+\title{Option mutations}
 \usage{
 option_mutation(inp_list, gene_pos)
 }
@@ -15,5 +15,5 @@ option_mutation(inp_list, gene_pos)
 character vector
 }
 \description{
-Title
+Option mutations
 }

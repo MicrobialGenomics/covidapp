@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{plot_mutations_2}
 \alias{plot_mutations_2}
-\title{Title}
+\title{Plot mutations 2}
 \usage{
 plot_mutations_2(
   inp_list,
@@ -30,5 +30,5 @@ plot_mutations_2(
 plot
 }
 \description{
-Title
+Plot mutations 2
 }

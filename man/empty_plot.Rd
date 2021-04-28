@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_functions.R
 \name{empty_plot}
 \alias{empty_plot}
-\title{Title}
+\title{empty plot}
 \usage{
 empty_plot(msg = "No data for this region")
 }
@@ -13,5 +13,5 @@ empty_plot(msg = "No data for this region")
 plotly
 }
 \description{
-Title
+empty plot
 }
