@@ -1,4 +1,4 @@
-c(
+global_vars <- c(
     ".",
     "C.A",
     "Description",
@@ -38,6 +38,6 @@ c(
     "x",
     "y",
     "year"
-) %>%
-    globalVariables()
+)
+utils::globalVariables(global_vars)
 

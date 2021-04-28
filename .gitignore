@@ -40,11 +40,6 @@ vignettes/*.pdf
 .Rproj.user
 
 covidapp.Rproj
-data/*.geojson
-data/*MergedData_spain*
-data/*MutationEmbeddedData.rds
-data/*map_data.rds
-data/session_*
-db/
+data/
 
 
