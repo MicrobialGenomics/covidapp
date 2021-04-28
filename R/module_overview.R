@@ -1,15 +1,12 @@
-#' Title
+#' UI module overview
 #'
-#' @param id identification
-#'
-#' @import ggplot2
-#'
+#' @param id module id
 #' @export
 overview_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
         headerPanel = NULL,
-        # sidebar
+
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
             shiny::div(
@@ -20,10 +17,13 @@ overview_module_ui <- function(id) {
                     width = "1000px",
                     status = "warning",
                     icon = shiny::icon("question")
-                ), style = "float:right"
+                ),
+                style = "float:right"
             ),
             shiny::br(),
+
             shiny::uiOutput(outputId = ns("region")),
+
             shinyWidgets::radioGroupButtons(
                 inputId = ns("stack_p1"),
                 label = shiny::h5("Pick y-axis transfomation: "),
@@ -36,6 +36,7 @@ overview_module_ui <- function(id) {
                 selected = "counts",
                 justified = TRUE
             ),
+
             shinyWidgets::radioGroupButtons(
                 inputId = ns("var_annot"),
                 label = shiny::h5("Pick Variant Annotation:  "),
@@ -52,16 +53,19 @@ overview_module_ui <- function(id) {
                 selected = "pangolin_lineage",
                 justified = TRUE
             ),
+
             shiny::uiOutput(outputId = ns("mutation_positions")),
+
             shiny::uiOutput(outputId = ns("option_clades")),
+
             shiny::uiOutput(outputId = ns("info"))
         ),
 
-        # main
         mainPanel = shiny::mainPanel(
             width = 9,
+
+            ## Plots first row
             shiny::fluidRow(
-                ## Plot 1
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_1_1")), align = "center"),
@@ -69,8 +73,6 @@ overview_module_ui <- function(id) {
                     plotly::plotlyOutput(shiny::NS(id, "plot_1"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
-
-                ## Plot 2
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_2_1")), align = "center"),
@@ -81,8 +83,9 @@ overview_module_ui <- function(id) {
             ),
             shiny::br(),
             shiny::br(),
+
+            ## Plots second row
             shiny::fluidRow(
-                ## Plot 3
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_3_1")), align = "center"),
@@ -90,8 +93,6 @@ overview_module_ui <- function(id) {
                     plotly::plotlyOutput(shiny::NS(id, "plot_3"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
-
-                ## Plot 4
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_4_1")), align = "center"),
@@ -104,14 +105,67 @@ overview_module_ui <- function(id) {
     )
 }
 
-#' Title
+#' Sever module overview
 #'
-#' @param id identification
-#'
+#' @param id module id
 #' @export
 overview_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
 
+        # Slider UI rendering --------------------------------------------------
+        ## Region picker
+        output$region <- shiny::renderUI({
+            shiny::req(exists("df_over"))
+            shinyWidgets::pickerInput(
+                inputId = session$ns("region"),
+                label = shiny::h5("Region for left and right plots"),
+                choices = list(
+                    "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
+                    "Right Plot" = stringr::str_c(c(
+                        "Spain", df_over$acom_name %>% unique()
+                    ), " ")
+                ),
+                multiple = TRUE,
+                selected = c("Spain", "Catalunya "),
+                options =  list(
+                    "max-options-group" = 1,
+                    `live-search` = TRUE
+                )
+            )
+        })
+
+        ## Annotation options
+        clades <- shiny::reactive({
+            if (input$var_annot == "NCClade") {
+                clades <- df_over %>%
+                    dplyr::pull(NCClade) %>%
+                    forcats::fct_infreq() %>%
+                    levels()
+            } else if (input$var_annot == "pangolin_lineage") {
+                clades <- df_over %>%
+                    dplyr::pull(pangolin_lineage) %>%
+                    forcats::fct_infreq() %>%
+                    levels()
+            } else if (input$var_annot == "mutation") {
+                shiny::req(input$mutation_positions)
+                clades <- mt %>% option_mutation(input$mutation_positions)
+            }
+        }) %>%
+            shiny::bindCache(input$var_annot, input$mutation_positions)
+
+        ## Annotation picker
+        output$option_clades <- shiny::renderUI({
+            shinyWidgets::pickerInput(
+                inputId = session$ns("variant"),
+                label = shiny::h5("Pick Variant / Mutation:"),
+                choices = clades(),
+                selected = "B.1.1.7",
+                multiple = FALSE,
+                options = list(`live-search` = TRUE)
+            )
+        })
+
+        ## Mutation position picker
         output$mutation_positions <- shiny::renderUI({
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(
@@ -124,49 +178,31 @@ overview_module_server <- function(id) {
             )
         })
 
-        ## Clades/Variants/Mutations UI
-        clades <- shiny::reactive({
-            if (input$var_annot == "NCClade") {
-                clades <- dplyr::pull(df_over, NCClade) %>% forcats::fct_infreq() %>% levels()
-            } else if (input$var_annot == "pangolin_lineage") {
-                clades <- dplyr::pull(df_over, pangolin_lineage) %>%
-                    forcats::fct_infreq() %>% levels() # %>% .[1:11]
-            } else if (input$var_annot == "mutation") {
-                shiny::req(input$mutation_positions)
-                clades <- mt %>%
-                    option_mutation(input$mutation_positions)
-            }
-        }) %>%
-            shiny::bindCache(input$var_annot, input$mutation_positions)
+        ## Pangolin variant information
+        file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
+        annot <- file %>%
+            readr::read_tsv(col_types = readr::cols()) %>%
+            dplyr::mutate(Description = stringr::str_remove_all(Description, "More information .*"))
 
-        output$option_clades <- shiny::renderUI({
-            shinyWidgets::pickerInput(
-                inputId = session$ns("variant"),
-                label = shiny::h5("Pick Variant / Mutation:"),
-                choices = clades(),
-                selected = "B.1.1.7",
-                multiple = FALSE,
-                options = list(`live-search` = TRUE)
+        output$info <- shiny::renderUI({
+            shiny::req(input$variant, input$var_annot == "pangolin_lineage")
+
+            var_description <- dplyr::filter(annot, Lineage == input$variant) %>%
+                dplyr::pull(Description)
+
+            shiny::div(
+                shiny::h5(var_description, style = "color: darkgray; text-align: justify; text-justify: inter-word;"),
+                shiny::tags$a(
+                    href = stringr::str_c(
+                        "https://outbreak.info/situation-reports?pango=",
+                        input$variant
+                    ),
+                    shiny::h5("Click for more information!", style = "color: darkgray")
+                )
             )
         })
 
-        ## Render Region options
-        output$region <- shiny::renderUI({
-            shiny::req(exists("df_over"))
-            shinyWidgets::pickerInput(
-                inputId = session$ns("region"),
-                label = shiny::h5("Region for left and right plots"),
-                choices = list(
-                    "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
-                    "Right Plot" = stringr::str_c(c("Spain", df_over$acom_name %>% unique()), " ")
-                ),
-                multiple = TRUE,
-                selected = c("Spain", "Catalunya "),
-                options =  list("max-options-group" = 1, `live-search` = TRUE)
-            )
-        })
-
-        # Titles ------------------------------------------------------------------
+        # Dynamic titles  ------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
@@ -194,7 +230,7 @@ overview_module_server <- function(id) {
         })
 
         output$title_3_1 <- shiny::renderText({
-            glue::glue("Average weekly {input$variant} prevalece in {input$region[[1]]}")
+            glue::glue("Average weekly {input$variant} prevalence in {input$region[[1]]}")
         })
 
         output$title_3_2 <- shiny::renderText({
@@ -202,34 +238,14 @@ overview_module_server <- function(id) {
         })
 
         output$title_4_1 <- shiny::renderText({
-            glue::glue("Average weekly {input$variant} prevalece in {stringr::str_remove_all(input$region[[2]], ' $' )}")
+            glue::glue("Average weekly {input$variant} prevalence in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
 
         output$title_4_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
 
-        file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
-        annot <- readr::read_tsv(file, col_types = readr::cols()) %>%
-            dplyr::mutate(Description = stringr::str_remove_all(Description, "More information .*"))
-
-        output$info <- shiny::renderUI({
-            shiny::req(input$variant, input$var_annot == "pangolin_lineage")
-
-            var_description <- annot %>%
-                dplyr::filter(Lineage == input$variant) %>%
-                dplyr::pull(Description)
-
-            shiny::div(
-                shiny::h5(var_description, style = "color: darkgray; text-align: justify; text-justify: inter-word;"),
-                shiny::tags$a(
-                    href = stringr::str_c("https://outbreak.info/situation-reports?pango=", input$variant),
-                    shiny::h5("Click for more information!", style = "color: darkgray")
-                )
-            )
-        })
-
-        # Plots -------------------------------------------------------------------
+        # Plots ----------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
             shiny::req(exists("df_over"), input$region, input$var_annot, input$stack_p1, exists("mt"))
@@ -253,7 +269,6 @@ overview_module_server <- function(id) {
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
             shiny::req(exists("df_over"), input$var_annot, input$stack_p1, input$region)
-
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 pp <- mt %>%
@@ -276,67 +291,66 @@ overview_module_server <- function(id) {
 
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
-            shiny::req(exists("df_over"),
-                       input$var_annot,
-                       input$region,
-                       input$variant)
-
+            shiny::req(exists("df_over"), input$var_annot, input$region, input$variant)
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
-                pp <- plot_mutation_line(inp_list = mt,
-                                         region = input$region[[1]],
-                                         mut_pos = input$mutation_positions,
-                                         mut = input$variant)
+                pp <- mt %>%
+                    plot_mutation_line(
+                        region = input$region[[1]],
+                        mut_pos = input$mutation_positions,
+                        mut = input$variant
+                    )
             } else {
                 if (input$region[[1]] == "Spain") {
                     pp <- df_over %>%
-                        plot_variant_line(variant = input$variant,
-                                          var_col = input$var_annot)
+                        plot_variant_line(
+                            variant = input$variant,
+                            var_col = input$var_annot
+                        )
                 } else {
                     pp <- df_over %>%
                         dplyr::filter(acom_name == input$region[[1]]) %>%
-                        plot_variant_line(variant = input$variant,
-                                          var_col = input$var_annot)
+                        plot_variant_line(
+                            variant = input$variant,
+                            var_col = input$var_annot
+                        )
                 }
             }
             pp
         }) %>%
             shiny::bindCache(input$var_annot, input$region, input$variant)
 
-
         ## Plot 4
         output$plot_4 <- plotly::renderPlotly({
-            shiny::req(exists("df_over"),
-                       input$var_annot,
-                       input$region,
-                       input$variant)
+            shiny::req(exists("df_over"), input$var_annot, input$region, input$variant)
 
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
-                pp <- plot_mutation_line(
-                    inp_list = mt,
-                    region = stringr::str_remove_all(input$region[[2]], ' $'),
-                    mut_pos = input$mutation_positions,
-                    mut = input$variant
-                )
+                pp <- mt %>%
+                    plot_mutation_line(
+                        region = stringr::str_remove_all(input$region[[2]], ' $'),
+                        mut_pos = input$mutation_positions,
+                        mut = input$variant
+                    )
             } else {
                 if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
                     pp <- df_over %>%
-                        plot_variant_line(variant = input$variant,
-                                          var_col = input$var_annot)
+                        plot_variant_line(
+                            variant = input$variant,
+                            var_col = input$var_annot
+                        )
                 } else {
                     pp <- df_over %>%
                         dplyr::filter(acom_name == stringr::str_remove_all(input$region[[2]], ' $' )) %>%
-                        plot_variant_line(variant = input$variant,
-                                          var_col = input$var_annot)
+                        plot_variant_line(
+                            variant = input$variant,
+                            var_col = input$var_annot
+                        )
                 }
             }
             pp
         }) %>%
-            shiny::bindCache(input$var_annot,
-                             input$region,
-                             input$variant,
-                             input$mutation_positions)
+            shiny::bindCache(input$var_annot, input$region, input$variant, input$mutation_positions)
     })
 }
 

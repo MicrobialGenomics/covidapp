@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{extract_mutations}
 \alias{extract_mutations}
-\title{Title}
+\title{Extract mutations}
 \usage{
 extract_mutations(inp_list)
 }
@@ -13,5 +13,5 @@ extract_mutations(inp_list)
 character vector
 }
 \description{
-Title
+Extract mutations
 }
