@@ -2,13 +2,13 @@
 % Please edit documentation in R/module_acknowledgements.R
 \name{acknowledgements_module_ui}
 \alias{acknowledgements_module_ui}
-\title{Title}
+\title{UI module acknowledgements}
 \usage{
 acknowledgements_module_ui(id)
 }
 \arguments{
-\item{id}{identification}
+\item{id}{module id}
 }
 \description{
-Title
+UI module acknowledgements
 }

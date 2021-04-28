@@ -2,7 +2,7 @@
 % Please edit documentation in R/module_per_ca.R
 \name{per_ca_module_server}
 \alias{per_ca_module_server}
-\title{Title}
+\title{Server module per C.A.}
 \usage{
 per_ca_module_server(id)
 }
@@ -10,5 +10,5 @@ per_ca_module_server(id)
 \item{id}{identification}
 }
 \description{
-Title
+Server module per C.A.
 }
