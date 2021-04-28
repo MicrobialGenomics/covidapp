@@ -5,6 +5,7 @@
 #' @param var_anno variant annotation column. ex. "NCClade" or "pangolin_lineage"
 #'
 #' @import ggplot2
+#' @importFrom graphics text
 #' @return tibble
 #' @export
 prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
@@ -412,7 +413,7 @@ check_mutations <- function(mut, all_pos) {
 
 #' Plot mutations 2
 #'
-#' @param df df
+#' @param inp_list mutations list
 #' @param region C.A or Spain
 #' @param var counts or freq
 #' @param pal mg or RColorBrewer palette
