@@ -99,8 +99,9 @@ footer <- shiny::div(
                             style = "border-radius: 50%;"
                         )
                     ),
+                    # https://twitter.com/intent/tweet?url=https%3A%2F%2Fcovariants.org%2F&text=CoVariants&via=firefoxx66&hashtags=CoVariants
                     shiny::tags$a(
-                        href = "https://twitter.com/intent/tweet?text=Hello%20world&url=http://ec2-34-254-223-195.eu-west-1.compute.amazonaws.com/covidapp/",
+                        href = "https://twitter.com/intent/tweet?url=http%3A%2F%2Fcovidtag.paseq.org%2F&text=CovidTag&hashtags=CovidTag",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = '30px',
