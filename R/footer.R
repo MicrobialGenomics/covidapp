@@ -15,6 +15,7 @@ footer <- shiny::div(
                         align = "right",
                         shiny::tags$a(
                             href = 'https://www.gisaid.org',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/gisaid.png",
                                 height = '40px',
@@ -27,6 +28,7 @@ footer <- shiny::div(
                         align = "left",
                         shiny::tags$a(
                             href = 'https://shiny.rstudio.com',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/shiny.png",
                                 height = '40px',
@@ -39,6 +41,7 @@ footer <- shiny::div(
                         align = "center",
                         shiny::tags$a(
                             href = 'https://leafletjs.com',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/leaflet.png",
                                 height = '40px',
@@ -51,6 +54,7 @@ footer <- shiny::div(
                         align = "center",
                         shiny::tags$a(
                             href = 'https://plotly.com',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/plotly.png",
                                 height = '40px',
@@ -63,6 +67,7 @@ footer <- shiny::div(
                         align = "center",
                         shiny::tags$a(
                             href = 'https://docs.docker.com/compose/',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/compose.png",
                                 height = '60px',
@@ -75,6 +80,7 @@ footer <- shiny::div(
                         align = "center",
                         shiny::tags$a(
                             href = 'https://www.docker.com',
+                            target="_blank",
                             shiny::img(
                                 src =  "images/gh_actions.png",
                                 height = '60px',
@@ -92,15 +98,19 @@ footer <- shiny::div(
                 shiny::fixedRow(
                     shiny::tags$a(
                         href = "",
+                        target="_blank",
                         shiny::img(
                             src = "images/mail.png",
+                            target="_blank",
                             height = '30px',
                             width = '30px',
                             style = "border-radius: 50%;"
                         )
                     ),
+                    # https://twitter.com/intent/tweet?url=https%3A%2F%2Fcovariants.org%2F&text=CoVariants&via=firefoxx66&hashtags=CoVariants
                     shiny::tags$a(
-                        href = "https://twitter.com/intent/tweet?text=Hello%20world&url=http://ec2-34-254-223-195.eu-west-1.compute.amazonaws.com/covidapp/",
+                        href = "https://twitter.com/intent/tweet?url=http%3A%2F%2Fcovidtag.paseq.org%2F&text=CovidTag&hashtags=CovidTag",
+                        target="_blank",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = '30px',
@@ -110,6 +120,7 @@ footer <- shiny::div(
                     ),
                     shiny::tags$a(
                         href = "https://www.linkedin.com/sharing/share-offsite/?url=http://ec2-34-254-223-195.eu-west-1.compute.amazonaws.com/covidapp/",
+                        target="_blank",
                         shiny::img(
                             src = "images/linkedin.svg",
                             height = '30px',
@@ -130,6 +141,7 @@ footer <- shiny::div(
                     align = "center",
                     shiny::tags$a(
                         href = "https://www.irsicaixa.es/",
+                        target="_blank",
                         shiny::img(
                             src = "images/logo_irsicaixa.png",
                             height = '60px',
@@ -141,29 +153,41 @@ footer <- shiny::div(
             ),
         ),
         shiny::br(),
-        shiny::tags$a(
-            # href = "",
-            shiny::h6(
-                "Developed by Francesc Català Moll and Marc Noguera i Julian",
-                align = "center",
-                style = "color: darkgray;"
-            )
+        shiny::h6(
+            "Developed",
+            shiny::a(
+                " Francesc Català Moll",
+                href = "https://www.irsicaixa.es/es/investigadores/francesc-catala-moll",
+                target = "_blank"
+            ),
+            "and",
+            shiny::a(
+                "  Marc Noguera i Julian",
+                href = "https://www.irsicaixa.es/es/node/2300",
+                target = "_blank"
+            ),
+            align = "center",
+            style = "color: darkgray;"
         ),
-        shiny::tags$a(
-            href = "mailto:covidapp@irsicaixa.es?",
-            shiny::h6(
-                "Contact us at covidseq@irsicaixa.es",
-                align = "center",
-                style = "color: darkgray;"
-            )
+        shiny::h6(
+            "Contact us at",
+            shiny::a(
+                " covidseq@irsicaixa.es",
+                href = "mailto:covidapp@irsicaixa.es?",
+                target = "_blank"
+            ),
+            align = "center",
+            style = "color: darkgray;"
         ),
-        shiny::tags$a(
-            href = "https://www.gisaid.org/registration/terms-of-use/",
-            shiny::h6(
-                "GISAID data provided on this website are a subject to GISAID Terms and Conditions",
-                align = "center",
-                style = "color: darkgray;"
-            )
+        shiny::h6(
+            "GISAID data provided on this website are a subject to GISAID's ",
+            shiny::a(
+                "Terms and Conditions",
+                href = "https://www.gisaid.org/DAA/",
+                target = "_blank"
+            ),
+            align = "center",
+            style = "color: darkgray;"
         )
     )
 )

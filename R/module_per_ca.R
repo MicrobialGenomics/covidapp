@@ -8,18 +8,19 @@ per_ca_module_ui <- function(id) {
         headerPanel = shiny::headerPanel(""),
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            shiny::div(
-                shinyWidgets::dropdownButton(
-                    popup_help_text,
-                    label = NULL,
-                    size = "xs",
-                    width = "1000px",
-                    status = "warning",
-                    icon = shiny::icon("question")
-                ), style = "float:right"
+            shiny::h5(
+                "Autonomous Community:",
+                shiny::div(
+                    shinyWidgets::dropdownButton(
+                        popup_help_text,
+                        label = NULL,
+                        size = "xs",
+                        width = "1000px",
+                        status = "warning",
+                        icon = shiny::icon("question")
+                    ), style = "float:right"
+                )
             ),
-            shiny::br(),
-
             shiny::uiOutput(outputId = ns("option_ca")),
 
             shinyWidgets::radioGroupButtons(
@@ -87,7 +88,7 @@ per_ca_module_server <- function(id) {
         output$option_ca <- shiny::renderUI({
             shinyWidgets::pickerInput(
                 inputId = session$ns("option_ca"),
-                label = shiny::h5("Autonomous Community:"),
+                label = NULL,
                 choices = c(
                     "Spain",
                     df_ca$acom_name %>% forcats::fct_infreq() %>% levels()
