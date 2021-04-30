@@ -9,20 +9,20 @@ overview_module_ui <- function(id) {
 
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
-            shiny::div(
-                shinyWidgets::dropdownButton(
-                    popup_help_text,
-                    label = NULL,
-                    size = "xs",
-                    width = "1000px",
-                    status = "warning",
-                    icon = shiny::icon("question")
-                ),
-                style = "float:right"
+            shiny::h5(
+                "Region for left and right plots",
+                shiny::div(
+                    shinyWidgets::dropdownButton(
+                        popup_help_text,
+                        label = NULL,
+                        size = "xs",
+                        width = "1000px",
+                        status = "warning",
+                        icon = shiny::icon("question")
+                    ),
+                    style = "align: right; float: right"
+                )
             ),
-            shiny::br(),
-
-            shiny::h5("Region for left and right plots"),
             shiny::uiOutput(outputId = ns("region")),
 
             shiny::h5("Pick y-axis transfomation: "),
@@ -455,7 +455,7 @@ popup_variant_description <- shiny::fluidPage(
                   style = "font-weight: bold; font-style: italic;"),
         shiny::fixedRow(
             shiny::h5(
-                "SARS-CoV-2 genome sequences obtained from samples are classified
+                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are classified
                 into groups according their similarity in terms of mutations or
                 groups of mutations. Two classification systems are used in
                 CovidTag: NextClade and Pangolin. For instance, the so-called
