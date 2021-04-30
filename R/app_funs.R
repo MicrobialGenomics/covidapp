@@ -11,21 +11,23 @@ ui <- function() {
                     width = 80,
                     style = "margin:-50px 5px"
                 ),
-                shiny::h6(
-                    "Enabled by data from",
-                    style = "right: 160px; top: 15px; position: absolute;"
+
+                "Enabled by data from",
+                style = "font-size: 14px",
+                shiny::a(
+                    href = "https://www.gisaid.org",
+                    target = "_black",
+                    shiny::img(
+                        src = "images/gisaid_2.png",
+                        height = 20,
+                        width = 50
+                    )
                 ),
+
                 shiny::fixedRow(
-                    shiny::tags$a(
-                        href = "https://www.gisaid.org",
-                        shiny::img(
-                            src = "images/gisaid_2.png",
-                            height = 20,
-                            width = 45
-                        )
-                    ),
-                    shiny::tags$a(
+                    shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
+                        target = "_black",
                         shiny::img(
                             src = "images/github_2.png",
                             height = 20,
@@ -33,8 +35,9 @@ ui <- function() {
                             style = "filter: invert(1)"
                         )
                     ),
-                    shiny::tags$a(
+                    shiny::a(
                         href = "https://twitter.com/MicrobialGene",
+                        target = "_black",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,
@@ -42,7 +45,7 @@ ui <- function() {
                             style = "border-radius: 50%;"
                         )
                     ),
-                    style = "right: 75px; top: 20px; position: absolute;"
+                    style = "right: 50px; top: 20px; position: absolute;"
                 )
             ),
             theme = shinythemes::shinytheme("flatly"),
@@ -105,6 +108,10 @@ ui <- function() {
                 shiny::br(),
                 footer
             ),
+            shiny::tags$head(shiny::tags$style('
+                       nav .container:first-child {
+                           margin-left:100px; width: 100%;
+                       }')),
             shinyjs::useShinyjs()
         )
     )
