@@ -12,9 +12,9 @@ ui <- function() {
                     style = "margin:-50px 5px"
                 ),
 
-                "Enabled by data from",
-                style = "font-size: 14px",
                 shiny::a(
+                    "Enabled by data from",
+                    style = "font-size: 14px; color: white",
                     href = "https://www.gisaid.org",
                     target = "_black",
                     shiny::img(
@@ -79,31 +79,11 @@ ui <- function() {
                 footer
             ),
 
-            # # TAB4: Per Variant
-            # shiny::tabPanel(
-            #     title = "Per Variant",
-            #     value = "tab_4",
-            #     per_variant_module_ui("tab4"),
-            #     shiny::br(),
-            #     shiny::br(),
-            #     footer
-            # ),
-            #
-            # # TAB5: Data download
-            # shiny::tabPanel(
-            #     title = "Data",
-            #     value = "tab_5",
-            #     data_dw_module_ui("tab5"),
-            #     shiny::br(),
-            #     shiny::br(),
-            #     footer
-            # )
-
-            # TAB6: Acknowledgements
+            # TAB4: Acknowledgements
             shiny::tabPanel(
                 title = "Acknowledgements",
-                value = "tab_6",
-                acknowledgements_module_ui("tab6"),
+                value = "tab_4",
+                acknowledgements_module_ui("tab4"),
                 shiny::br(),
                 shiny::br(),
                 footer
@@ -125,18 +105,6 @@ server <- function() {
 
         shinyjs::runjs('document.title = "CovidTag"')
 
-        # cdata <-  geoloc::wtfismyip()
-        # s_cdata <- cdata %>%
-        #     names() %>%
-        #     isolate() %>%
-        #     purrr::map_dfc(function(x) {
-        #         tibble::tibble({{ x }} := isolate(cdata[[x]]))
-        #     }) %>%
-        #     dplyr::select(!dplyr::contains("output")) %>%
-        #     dplyr::mutate(date = Sys.time()) %>%
-        #     dplyr::slice_head(n = 1) %>%
-        #     readr::write_csv(file = glue::glue("/srv/shiny-server/data/session_{stringi::stri_rand_strings(1, 10)}.csv"))
-
         ## Module tab 1
         overview_module_server("tab1")
 
@@ -146,14 +114,8 @@ server <- function() {
         ## Module tab 3
         per_ca_module_server("tab3")
 
-        # ## Module tab 4
-        # per_variant_module_server("tab4")
-        #
-        # ## Module tab 5
-        # data_dw_module_server("tab5")
-
-        ## Module tab 6
-        acknowledgements_module_server("tab6")
+        ## Module tab 4
+        acknowledgements_module_server("tab4")
     }
 }
 
