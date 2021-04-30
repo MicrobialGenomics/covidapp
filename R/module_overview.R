@@ -30,10 +30,6 @@ overview_module_ui <- function(id) {
                 inputId = ns("stack_p1"),
                 label = NULL,
                 choices = c("stack" = "counts", "fill" = "freq"),
-                checkIcon = list(
-                    yes = tags$i(class = "fa fa-check-square"),
-                    no = tags$i(class = "fa fa-square-o")
-                ),
                 status = "default",
                 selected = "counts",
                 justified = TRUE
@@ -60,10 +56,6 @@ overview_module_ui <- function(id) {
                     "Pangolin" = "pangolin_lineage",
                     "Nextclade" = "NCClade",
                     "Mutation" = "mutation"
-                ),
-                checkIcon = list(
-                    yes = tags$i(class = "fa fa-check-square"),
-                    no = tags$i(class = "fa fa-square-o")
                 ),
                 status = "default",
                 selected = "pangolin_lineage",
