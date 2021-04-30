@@ -173,7 +173,7 @@ footer <- shiny::div(
             "Contact us at",
             shiny::a(
                 " covidseq@irsicaixa.es",
-                href = "mailto:covidapp@irsicaixa.es?",
+                href = "mailto:covidseq@irsicaixa.es?",
                 target = "_blank"
             ),
             align = "center",
