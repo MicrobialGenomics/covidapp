@@ -1,4 +1,5 @@
 library(covidapp)
+library(ggplot2)
 
 # Load map module data ----------------------------------------------------
 df_map <<- readr::read_rds("data/map_data.rds")
