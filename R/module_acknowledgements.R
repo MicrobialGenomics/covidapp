@@ -68,9 +68,31 @@ acknowledgements_module_ui <- function(id) {
                         "* (a) Elbe, S., and Buckland-Merrett, G. (2017) Data,
                         disease and diplomacy: GISAID’s innovative contribution
                         to global health. Global Challenges, 1:33-46.
-                        DOI: 10.1002/gch2.1018 and / or (b) Shu, Y., McCauley,
-                        J. (2017) GISAID: From vision to reality. EuroSurveillance,
-                        22(13) DOI: 10.2807/1560-7917.ES.2017.22.13.30494.",
+                        DOI: ",
+                        shiny::a(
+                            " 10.1002/gch2.1018",
+                            href = "https://onlinelibrary.wiley.com/doi/full/10.1002/gch2.1018",
+                            target = "_blank"
+                        ),
+                        " PMCID: ",
+                        shiny::a(
+                            " 31565258",
+                            href = "https://pubmed.ncbi.nlm.nih.gov/31565258/",
+                            target = "_blank"
+                        ),
+                        " (b) Shu, Y., McCauley, J. (2017) GISAID: From vision
+                        to reality. EuroSurveillance, 22(13) DOI: ",
+                        shiny::a(
+                            " 10.2807/1560-7917.ES.2017.22.13.30494",
+                            href = "https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2017.22.13.30494",
+                            target = "_blank"
+                        ),
+                        " PMCID: ",
+                        shiny::a(
+                            " PMC5388101",
+                            href = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5388101/",
+                            target = "_blank"
+                        ),
                         align = "center",
                         style = "margin-left: 150px; margin-right: 150px; line-height: 25px;"
                     )
