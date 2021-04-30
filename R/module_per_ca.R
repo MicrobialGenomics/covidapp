@@ -29,11 +29,7 @@ per_ca_module_ui <- function(id) {
                 choices = c("stack" = "counts", "fill" = "freq"),
                 status = "default",
                 selected = "counts",
-                justified = TRUE,
-                checkIcon = list(
-                    yes = tags$i(class = "fa fa-check-square"),
-                    no = tags$i(class = "fa fa-square-o")
-                )
+                justified = TRUE
             ),
 
             shinyWidgets::radioGroupButtons(
@@ -42,11 +38,7 @@ per_ca_module_ui <- function(id) {
                 choices = c("Pangolin" = "pangolin_lineage", "Nextclade" = "NCClade"),
                 status = "default",
                 selected = "pangolin_lineage",
-                justified = TRUE,
-                checkIcon = list(
-                    yes = tags$i(class = "fa fa-check-square"),
-                    no = tags$i(class = "fa fa-square-o")
-                )
+                justified = TRUE
             )
         ),
 
