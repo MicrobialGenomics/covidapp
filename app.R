@@ -21,7 +21,6 @@ com_aut <- df_ca %>%
     sort() %>%
     c("Spain", .)
 
-
 all_plots <- list()
 for (com in com_aut) {
     all_plots[["counts"]][["pangolin_lineage"]][[com]] <- df_ca %>%
