@@ -42,4 +42,6 @@ vignettes/*.pdf
 covidapp.Rproj
 data/
 
+.DS_Store
+
 
