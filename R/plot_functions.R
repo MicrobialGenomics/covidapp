@@ -12,7 +12,10 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
     if (var_anno == "pangolin_lineage") {
         to_retain <- df %>%
             dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
-            dplyr::pull(clade) %>% levels() %>% .[1:11]
+            dplyr::pull(clade) %>% 
+            levels() %>% 
+            .[. %in% c(.[1:11], "B.1.1.7", "P.1", "B.1.351", "B.1.617")] %>% 
+            unique()
 
         df <- df %>% dplyr::mutate(!!sym(var_anno) := dplyr::if_else(!!sym(var_anno) %in% to_retain, !!sym(var_anno), "Other"))
     }
@@ -104,8 +107,10 @@ plot_vairants <- function(df,
     if (!pal == "mg") {
         pp <- pp + scale_fill_brewer(palette = pal, direction = pal_dir, name = "")
     } else {
-        pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
-                 "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+        pal <- c("darkorchid1", "gray", "#000000", "#E69F00", "#56B4E9", "#009E73", 
+                 "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkred","darkgreen",
+                 "steelblue", "#F51313")
+        
         pp <- pp + scale_fill_manual(values = pal)
     }
 
@@ -373,9 +378,10 @@ plot_mutations <- function(df,
         pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
     }
 
-    pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
-             "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
-
+    pal <- c("darkorchid1", "gray", "#000000", "#E69F00", "#56B4E9", "#009E73", 
+             "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkred","darkgreen",
+             "steelblue", "#F51313")
+    
     pp <- pp + scale_fill_manual(values = rev(pal))
 
     if (isTRUE(plotly)) {
@@ -474,8 +480,10 @@ plot_mutations_2 <- function(inp_list,
         pp <- pp + scale_y_continuous(labels = scales::percent, limits = c(0, 1))
     }
 
-    pal <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
-             "#D55E00", "#CC79A7","darkred","darkgreen","steelblue", "#F51313")
+    pal <- c("darkorchid1", "gray", "#000000", "#E69F00", "#56B4E9", "#009E73", 
+             "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkred","darkgreen",
+             "steelblue", "#F51313")
+    
     pp <- pp + scale_fill_manual(values = rev(pal))
 
     if (isTRUE(plotly)) {
