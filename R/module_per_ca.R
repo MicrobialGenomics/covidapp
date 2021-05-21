@@ -22,15 +22,6 @@ per_ca_module_ui <- function(id) {
                 )
             ),
             shiny::uiOutput(outputId = ns("option_ca")),
-
-            shinyWidgets::radioGroupButtons(
-                inputId = ns("stack_p1"),
-                label = shiny::h5("Pick y-axis transfomation:"),
-                choices = c("stack" = "counts", "fill" = "freq"),
-                status = "default",
-                selected = "counts",
-                justified = TRUE
-            ),
             
             shiny::h5(
                 "Pick Variant Annotation:  ",
@@ -55,6 +46,18 @@ per_ca_module_ui <- function(id) {
                     "Nextclade" = "NCClade"
                 ), 
                 selected = "pangolin_lineage"
+            ), 
+            
+            shiny::h5("Pick y-axis transfomation: "),
+            shinyWidgets::prettyRadioButtons(
+                inputId = ns("stack_p1"),
+                label = NULL,
+                choices = c("Proportions" = "counts", "Percentages" = "freq"),
+                icon = icon("check"), 
+                selected = "counts",
+                inline = TRUE, 
+                status = "default",
+                animation = "jelly"
             )
         ),
 

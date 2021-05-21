@@ -51,7 +51,7 @@ map_module_ui <- function(id) {
             shinyWidgets::materialSwitch(
                 inputId = ns("norm"),
                 label = "per 1e5 inhabitant correction",
-                value = TRUE,
+                value = FALSE,
                 right = TRUE,
                 width = "100%",
                 status = "info"
