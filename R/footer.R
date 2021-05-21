@@ -17,9 +17,9 @@ footer <- shiny::div(
                             href = 'https://www.gisaid.org',
                             target="_blank",
                             shiny::img(
-                                src =  "images/gisaid.png",
-                                height = '40px',
-                                width = '80px'
+                                src =  "images/aws.png",
+                                height = '30px',
+                                width = '60px'
                             )
                         )
                     ),
