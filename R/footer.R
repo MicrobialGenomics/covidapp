@@ -14,12 +14,12 @@ footer <- shiny::div(
                         width = 2,
                         align = "right",
                         shiny::tags$a(
-                            href = 'https://www.gisaid.org',
+                            href = 'https://aws.amazon.com/es/',
                             target="_blank",
                             shiny::img(
-                                src =  "images/gisaid.png",
+                                src =  "images/whatchtower.png",
                                 height = '40px',
-                                width = '80px'
+                                width = '40px'
                             )
                         )
                     ),
@@ -191,3 +191,5 @@ footer <- shiny::div(
         )
     )
 )
+
+

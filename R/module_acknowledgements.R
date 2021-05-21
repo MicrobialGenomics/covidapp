@@ -33,7 +33,7 @@ acknowledgements_module_ui <- function(id) {
                     ),
                     shiny::h5(
                         "• In relation with the last consideration, last data
-                        pints often has incomplete data and may change as more
+                        points often has incomplete data and may change as more
                         sequences come in.",
                         align = "center",
                         style = "margin-left: 70px; margin-right: 70px; line-height: 25px;"

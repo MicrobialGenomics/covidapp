@@ -49,17 +49,16 @@ overview_module_ui <- function(id) {
                     style = "align: right; float: right"
                 )
             ),
-            shinyWidgets::radioGroupButtons(
+            shinyWidgets::pickerInput(
                 inputId = ns("var_annot"),
                 label = NULL,
                 choices = c(
-                    "Pangolin" = "pangolin_lineage",
+                    "Pango lineages" = "pangolin_lineage",
+                    "GISAID clades" = "GISAID_clade",
                     "Nextclade" = "NCClade",
                     "Mutation" = "mutation"
-                ),
-                status = "default",
-                selected = "pangolin_lineage",
-                justified = TRUE
+                ), 
+                selected = "pangolin_lineage"
             ),
 
             shiny::uiOutput(outputId = ns("mutation_positions")),
@@ -157,6 +156,11 @@ overview_module_server <- function(id) {
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 clades <- mt %>% option_mutation(input$mutation_positions)
+            } else if (input$var_annot == "GISAID_clade") {
+                clades <- df_over %>% 
+                    dplyr::pull(GISAID_clade) %>% 
+                    forcats::fct_infreq() %>% 
+                    levels()
             }
         }) %>%
             shiny::bindCache(input$var_annot, input$mutation_positions)
@@ -234,7 +238,8 @@ overview_module_server <- function(id) {
         output$title_1_1 <- shiny::renderText({
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
-                input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                input$var_annot == "pangolin_lineage" ~ "Pango variants",
+                input$var_annot == "GISAID_clade" ~ "GISAID clades",
                 TRUE ~ "Mutations"
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {input$region[[1]]}")
@@ -248,6 +253,7 @@ overview_module_server <- function(id) {
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
                 input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                input$var_annot == "GISAID_clade" ~ "GISAID clades",
                 TRUE ~ "Mutations"
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
@@ -447,50 +453,26 @@ popup_variant_description <- shiny::fluidPage(
                   style = "font-weight: bold; font-style: italic;"),
         shiny::fixedRow(
             shiny::h5(
-                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are classified
-                into groups according their similarity in terms of mutations or
-                groups of mutations. Two classification systems are used in
-                CovidTag: NextClade and Pangolin. For instance, the so-called
-                “british” variant that is found to be dominant in most of Europe
-                is labeled as 501Y.V1 by NextClade and B.1.1.7 by Pangolin
-                classification systems. You can select any of the variants using
-                the drop-down menu for a brief description and a link to access
-                complete information. You can also select the “Mutation” option
-                to choose a single mutation and display how and when this
-                mutation has appeared in genomic sequences over time.",
+                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are 
+                classified into groups according their similarity in terms of 
+                mutations or groups of mutations. The three classification systems
+                used in CovidTag are the clades designed by GISAID, NextClade and 
+                Pangolin. For instance, the variant of interest 'VUI202012/01' 
+                first identified in the United Kindom in December 2020, is 
+                designated by GISAID as clade 'GRY', as 501Y.V1 by NextClade 
+                and as B.1.1.7 by Pango lineages.",
+                style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
+            ),
+            shiny::h5(
+                "You can select any of the variants using the drop-down menu for
+                a brief description and a link to access complete information. 
+                You can also select the “Mutation” option to choose a single 
+                mutation and display how and when this mutation has appeared in 
+                genomic sequences over time.",
                 style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
             )
         )
-    ),
-    shiny::fixedRow(shiny::div(
-        shiny::h5(
-            "PANGO lineages",
-            shiny::tags$a(
-                href = 'https://cov-lineages.org/pangolin.html',
-                shiny::img(
-                    src =  "images/pangolin.png",
-                    height = '50px',
-                    width = '50px'
-                )
-            ),
-            shiny::tags$a(
-                shiny::img(
-                    src =  "images/blank.png",
-                    height = '40px',
-                    width = '30px'
-                )
-            ),
-            shiny::tags$a(
-                href = 'https://clades.nextstrain.org',
-                shiny::img(
-                    src =  "images/NextClade.png",
-                    height = '40px',
-                    width = '140px'
-                )
-            ),
-            align = "center"
-        )
-    ))
+    )
 )
 
 
