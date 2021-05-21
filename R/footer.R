@@ -14,7 +14,7 @@ footer <- shiny::div(
                         width = 2,
                         align = "right",
                         shiny::tags$a(
-                            href = 'https://aws.amazon.com/es/',
+                            href = 'https://containrrr.dev/watchtower',
                             target="_blank",
                             shiny::img(
                                 src =  "images/whatchtower.png",
