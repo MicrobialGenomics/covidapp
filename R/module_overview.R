@@ -49,17 +49,16 @@ overview_module_ui <- function(id) {
                     style = "align: right; float: right"
                 )
             ),
-            shinyWidgets::radioGroupButtons(
+            shinyWidgets::pickerInput(
                 inputId = ns("var_annot"),
                 label = NULL,
                 choices = c(
-                    "Pangolin" = "pangolin_lineage",
+                    "Pango lineages" = "pangolin_lineage",
+                    "GISAID clades" = "GISAID_clade",
                     "Nextclade" = "NCClade",
                     "Mutation" = "mutation"
-                ),
-                status = "default",
-                selected = "pangolin_lineage",
-                justified = TRUE
+                ), 
+                selected = "pangolin_lineage"
             ),
 
             shiny::uiOutput(outputId = ns("mutation_positions")),
@@ -157,6 +156,11 @@ overview_module_server <- function(id) {
             } else if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 clades <- mt %>% option_mutation(input$mutation_positions)
+            } else if (input$var_annot == "GISAID_clade") {
+                clades <- df_over %>% 
+                    dplyr::pull(GISAID_clade) %>% 
+                    forcats::fct_infreq() %>% 
+                    levels()
             }
         }) %>%
             shiny::bindCache(input$var_annot, input$mutation_positions)
@@ -234,7 +238,8 @@ overview_module_server <- function(id) {
         output$title_1_1 <- shiny::renderText({
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
-                input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                input$var_annot == "pangolin_lineage" ~ "Pango variants",
+                input$var_annot == "GISAID_clade" ~ "GISAID clades",
                 TRUE ~ "Mutations"
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {input$region[[1]]}")
@@ -248,6 +253,7 @@ overview_module_server <- function(id) {
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
                 input$var_annot == "pangolin_lineage" ~ "Pangolin variants",
+                input$var_annot == "GISAID_clade" ~ "GISAID clades",
                 TRUE ~ "Mutations"
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
