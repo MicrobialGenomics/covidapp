@@ -40,6 +40,15 @@ for (com in com_aut) {
             pal_dir = -1,
             pal = "mg"
         )
+    
+    all_plots[["counts"]][["GISAID_clade"]][[com]] <- df_ca %>%
+        prepro_variants(ca = com, var_anno = "GISAID_clade") %>%
+        plot_vairants(
+            type = "bar",
+            var = "counts",
+            pal_dir = -1,
+            pal = "mg"
+        )
 
     all_plots[["freq"]][["pangolin_lineage"]][[com]] <- df_ca %>%
         prepro_variants(ca = com, var_anno = "pangolin_lineage") %>%
@@ -52,6 +61,15 @@ for (com in com_aut) {
 
     all_plots[["freq"]][["NCClade"]][[com]] <- df_ca %>%
         prepro_variants(ca = com, var_anno = "NCClade") %>%
+        plot_vairants(
+            type = "bar",
+            var = "freq",
+            pal_dir = -1,
+            pal = "mg"
+        )
+    
+    all_plots[["freq"]][["GISAID_clade"]][[com]] <- df_ca %>%
+        prepro_variants(ca = com, var_anno = "GISAID_clade") %>%
         plot_vairants(
             type = "bar",
             var = "freq",

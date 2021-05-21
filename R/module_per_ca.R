@@ -31,14 +31,30 @@ per_ca_module_ui <- function(id) {
                 selected = "counts",
                 justified = TRUE
             ),
-
-            shinyWidgets::radioGroupButtons(
+            
+            shiny::h5(
+                "Pick Variant Annotation:  ",
+                shiny::div(
+                    shinyWidgets::dropdownButton(
+                        popup_variant_description,
+                        label = NULL,
+                        size = "xs",
+                        width = "1000px",
+                        status = "warning",
+                        icon = shiny::icon("question")
+                    ),
+                    style = "align: right; float: right"
+                )
+            ),
+            shinyWidgets::pickerInput(
                 inputId = ns("var_annot"),
-                label = shiny::h5("Pick Variant Annotation:"),
-                choices = c("Pangolin" = "pangolin_lineage", "Nextclade" = "NCClade"),
-                status = "default",
-                selected = "pangolin_lineage",
-                justified = TRUE
+                label = NULL,
+                choices = c(
+                    "Pango lineages" = "pangolin_lineage",
+                    "GISAID clades" = "GISAID_clade",
+                    "Nextclade" = "NCClade"
+                ), 
+                selected = "pangolin_lineage"
             )
         ),
 
@@ -77,9 +93,8 @@ per_ca_module_server <- function(id) {
         plots_to_plot <- shiny::reactive({
             shiny::req(input$stack_p1, input$var_annot)
             all_plots[[paste0(input$stack_p1)]][[paste0(input$var_annot)]]
-        }) %>%
-            shiny::bindCache(input$stack_p1, input$var_annot)
-
+        })
+        
         output$plots <- shiny::renderUI({
             lapply(input$option_ca, function(pp) {
                 shiny::tagList(
@@ -92,8 +107,7 @@ per_ca_module_server <- function(id) {
                     )
                 )
             })
-        }) %>%
-            shiny::bindCache(input$option_ca)
+        })
     })
 }
 
