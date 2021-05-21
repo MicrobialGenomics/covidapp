@@ -26,17 +26,8 @@ overview_module_ui <- function(id) {
             shiny::uiOutput(outputId = ns("region")),
             tags$style(HTML(".js-irs-0 .irs-single, .js-irs-0 .irs-bar-edge, .js-irs-0 .irs-bar {background: lightgray; border-color: lightgray}")),
             shiny::uiOutput(outputId = ns("plot_date")),
-
-            shiny::h5("Pick y-axis transfomation: "),
-            shinyWidgets::radioGroupButtons(
-                inputId = ns("stack_p1"),
-                label = NULL,
-                choices = c("stack" = "counts", "fill" = "freq"),
-                status = "default",
-                selected = "counts",
-                justified = TRUE
-            ),
-
+            shiny::br(),
+            
             shiny::h5(
                 "Pick Variant Annotation:  ",
                 shiny::div(
@@ -62,12 +53,22 @@ overview_module_ui <- function(id) {
                 ), 
                 selected = "pangolin_lineage"
             ),
-
             shiny::uiOutput(outputId = ns("mutation_positions")),
-
             shiny::uiOutput(outputId = ns("option_clades")),
-
-            shiny::uiOutput(outputId = ns("info"))
+            shiny::uiOutput(outputId = ns("info")), 
+            
+            shiny::br(), 
+            shiny::h5("Pick y-axis transfomation: "),
+            shinyWidgets::prettyRadioButtons(
+                inputId = ns("stack_p1"),
+                label = NULL,
+                choices = c("Proportions" = "counts", "Percentages" = "freq"),
+                icon = icon("check"), 
+                selected = "counts",
+                inline = TRUE, 
+                status = "default",
+                animation = "jelly"
+            )
         ),
 
         mainPanel = shiny::mainPanel(
@@ -128,10 +129,10 @@ overview_module_server <- function(id) {
             dates <- format(as.Date(sort(unique(df_over$date))), "%d %b %y")
             shinyWidgets::sliderTextInput(
                 inputId = session$ns("plot_date"),
-                label = shiny::h5("Select mapping date"),
+                label = shiny::h5("Select date range"),
                 choices = dates,
                 selected = c(dates[1], dates[length(dates)]),
-                from_max = dates[length(dates) - 1],
+                # from_max = dates[length(dates) - 1],
                 grid = FALSE
             )
         }) %>%
