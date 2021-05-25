@@ -43,6 +43,6 @@ covidapp.Rproj
 data/
 
 .DS_Store
-logs/
+logs/shinylogs*
 
 
