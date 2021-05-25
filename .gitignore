@@ -43,5 +43,6 @@ covidapp.Rproj
 data/
 
 .DS_Store
+logs/
 
 
