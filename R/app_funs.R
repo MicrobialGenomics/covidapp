@@ -104,6 +104,7 @@ server <- function() {
     function(input, output, session) {
 
         shinyjs::runjs('document.title = "CovidTag"')
+        shinylogs::track_usage(storage_mode = shinylogs::store_rds("data/logs/"))
 
         ## Module tab 1
         overview_module_server("tab1")
