@@ -39,7 +39,8 @@ Imports:
     DT,
     lubridate,
     purrr,
-    shinycssloaders
+    shinycssloaders,
+    shinylogs
 Suggests: 
     roxygen2
 Depends: 
