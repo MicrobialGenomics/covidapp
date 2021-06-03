@@ -62,7 +62,7 @@ overview_module_ui <- function(id) {
             shinyWidgets::prettyRadioButtons(
                 inputId = ns("stack_p1"),
                 label = NULL,
-                choices = c("Proportions" = "counts", "Percentages" = "freq"),
+                choices = c("Counts" = "counts", "Percentages" = "freq"),
                 icon = icon("check"), 
                 selected = "counts",
                 inline = TRUE, 
