@@ -44,5 +44,6 @@ data/
 
 .DS_Store
 logs/shinylogs*
+user_logs/
 
 
