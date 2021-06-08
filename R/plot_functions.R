@@ -265,7 +265,7 @@ plot_variant_line <- function(df, mt, variant, var_col) {
         ggplot(aes(week_num, freq, colour = varcol, fill = varcol)) +
         stat_smooth(method = "gam", formula = y ~ s(x), size = 0.8, alpha = 0.5, lty = 0) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
-        scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+        scale_y_continuous(labels = scales::percent) + # , breaks = seq(0, 1, by = 0.25)
         scale_fill_manual(values = "#FEE08B") +
         scale_colour_manual(values = "#F46D43") +
         labs(x = "", y = "Frequency") +
@@ -548,7 +548,7 @@ plot_mutation_line <- function(inp_list,
             lty = 0
         ) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
-        scale_y_continuous(labels = scales::percent, breaks = seq(0, 1, by = 0.25)) +
+        scale_y_continuous(labels = scales::percent) + #, breaks = seq(0, 1, by = 0.25)
         scale_fill_manual(values = "#FEE08B") +
         scale_colour_manual(values = "#F46D43") +
         labs(x = "", y = "Frequency") +
