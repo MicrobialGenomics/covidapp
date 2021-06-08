@@ -107,10 +107,10 @@ plot_vairants <- function(df,
     if (!pal == "mg") {
         pp <- pp + scale_fill_brewer(palette = pal, direction = pal_dir, name = "")
     } else {
-        pal <- c("darkorchid1", "gray", "#000000", "#E69F00", "#56B4E9", "#009E73", 
+        pal <- c("#6A33C2", "#CAB2D6", "darkorchid1", "gray", "#000000", "#E69F00", "#56B4E9", "#009E73",
                  "#F0E442", "#0072B2", "#D55E00", "#CC79A7","darkred","darkgreen",
-                 "steelblue", "#F51313")
-        
+                 "steelblue", "#F51313", "#85660D", "#AA0DFE")
+
         pp <- pp + scale_fill_manual(values = pal)
     }
 
