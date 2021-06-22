@@ -43,7 +43,8 @@ per_ca_module_ui <- function(id) {
                 choices = c(
                     "Pango lineages" = "pangolin_lineage",
                     "GISAID clades" = "GISAID_clade",
-                    "Nextclade" = "NCClade"
+                    "Nextclade" = "NCClade",
+                    "World Health Organization" = "who"
                 ), 
                 selected = "pangolin_lineage"
             ), 
