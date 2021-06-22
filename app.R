@@ -6,7 +6,23 @@ df_map <<- readr::read_rds("data/map_data.rds")
 
 # Load overview module data -----------------------------------------------
 df_over <<- df_map$dat %>%
-    dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) %>%
+    dplyr::mutate(
+        acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"),
+        who = dplyr::case_when(
+            stringr::str_detect(NCClade, "Alpha") ~ "Alpha", 
+            stringr::str_detect(NCClade, "Beta") ~ "Beta",
+            stringr::str_detect(NCClade, "Gamma") ~ "Gamma",
+            stringr::str_detect(NCClade, "Delta") ~ "Delta",
+            stringr::str_detect(NCClade, "Epsilon") ~ "Epsilon",
+            stringr::str_detect(NCClade, "20B") ~ "Zeta",
+            stringr::str_detect(NCClade, "Eta") ~ "Eta",
+            stringr::str_detect(NCClade, "21E") ~ "Theta",
+            stringr::str_detect(NCClade, "Iota") ~ "Iota",
+            stringr::str_detect(NCClade, "Kappa") ~ "Kappa",
+            stringr::str_detect(NCClade, "20D") ~ "Lambda",
+            TRUE ~ "other"
+        ) 
+    ) %>% 
     dplyr::filter(!acom_name == "Spain")
 
 mt <<- readr::read_rds("data/MutationEmbeddedData.rds")
@@ -49,6 +65,15 @@ for (com in com_aut) {
             pal_dir = -1,
             pal = "mg"
         )
+    
+    all_plots[["counts"]][["who"]][[com]] <- df_ca %>%
+        prepro_variants(ca = com, var_anno = "who") %>%
+        plot_vairants(
+            type = "bar",
+            var = "counts",
+            pal_dir = -1,
+            pal = "mg"
+        )
 
     all_plots[["freq"]][["pangolin_lineage"]][[com]] <- df_ca %>%
         prepro_variants(ca = com, var_anno = "pangolin_lineage") %>%
@@ -70,6 +95,15 @@ for (com in com_aut) {
     
     all_plots[["freq"]][["GISAID_clade"]][[com]] <- df_ca %>%
         prepro_variants(ca = com, var_anno = "GISAID_clade") %>%
+        plot_vairants(
+            type = "bar",
+            var = "freq",
+            pal_dir = -1,
+            pal = "mg"
+        )
+    
+    all_plots[["freq"]][["who"]][[com]] <- df_ca %>%
+        prepro_variants(ca = com, var_anno = "who") %>%
         plot_vairants(
             type = "bar",
             var = "freq",

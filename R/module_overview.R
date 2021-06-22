@@ -49,6 +49,7 @@ overview_module_ui <- function(id) {
                     "Pango lineages" = "pangolin_lineage",
                     "GISAID clades" = "GISAID_clade",
                     "Nextclade" = "NCClade",
+                    "World Health Organization" = "who", 
                     "Mutation" = "mutation"
                 ), 
                 selected = "pangolin_lineage"
@@ -190,6 +191,11 @@ overview_module_server <- function(id) {
             } else if (input$var_annot == "GISAID_clade") {
                 clades <- f_df() %>% 
                     dplyr::pull(GISAID_clade) %>% 
+                    forcats::fct_infreq() %>% 
+                    levels()
+            } else if (input$var_annot == "who") {
+                clades <- f_df() %>% 
+                    dplyr::pull(who) %>% 
                     forcats::fct_infreq() %>% 
                     levels()
             }
