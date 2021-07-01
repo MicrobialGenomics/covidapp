@@ -14,7 +14,7 @@ overview2_module_ui <- function(id) {
             shiny::fileInput(
                 inputId = ns("target_load"),
                 label = shiny::h5("Choose csv"),
-                accept = c(".csv", ".txt", ".csv.zip", ".txt.zip"),
+                accept = c(".csv", ".txt", ".zip"),
                 placeholder = "No file selected",
                 buttonLabel = "Browse...",
                 width = 400
@@ -126,7 +126,7 @@ overview2_module_server <- function(id) {
         df_over <- shiny::reactive({
             shiny::req(inFile <- input$target_load)
             if (is.null(inFile)) { return(NULL) }
-            readr::read_csv(inFile$datapath, col_names = TRUE)
+            readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";")
         })
         
         # Slider UI rendering --------------------------------------------------
