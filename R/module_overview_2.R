@@ -2,13 +2,24 @@
 #'
 #' @param id module id
 #' @export
-overview_module_ui <- function(id) {
+overview2_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
         headerPanel = NULL,
-
+        
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
+            
+            ## Upload data
+            shiny::fileInput(
+                inputId = ns("target_load"),
+                label = shiny::h5("Choose csv"),
+                accept = c(".csv", ".txt", ".zip"),
+                placeholder = "No file selected",
+                buttonLabel = "Browse...",
+                width = 400
+            ),
+            shiny::br(),
             shiny::h5(
                 "Region for left and right plots",
                 shiny::div(
@@ -60,44 +71,44 @@ overview_module_ui <- function(id) {
                 animation = "jelly"
             )
         ),
-
+        
         mainPanel = shiny::mainPanel(
             width = 9,
-
+            
             ## Plots first row
             shiny::fluidRow(
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_1_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_1_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_1"), height = 400) %>%
+                    plotly::plotlyOutput(ns("plot_1"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_2_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_2_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_2"), height = 400) %>%
+                    plotly::plotlyOutput(ns("plot_2"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 )
             ),
             shiny::br(),
             shiny::br(),
-
+            
             ## Plots second row
             shiny::fluidRow(
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_3_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_3_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_3"), height = 400) %>%
+                    plotly::plotlyOutput(ns("plot_3"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 ),
                 shiny::column(
                     width = 6,
                     shiny::h4(shiny::textOutput(outputId = ns("title_4_1")), align = "center"),
                     shiny::h6(shiny::textOutput(outputId = ns("title_4_2")), align = "center"),
-                    plotly::plotlyOutput(shiny::NS(id, "plot_4"), height = 400) %>%
+                    plotly::plotlyOutput(ns("plot_4"), height = 400) %>%
                         shinycssloaders::withSpinner(type = 7, color = "#ABD9E9")
                 )
             )
@@ -109,27 +120,31 @@ overview_module_ui <- function(id) {
 #'
 #' @param id module id
 #' @export
-overview_module_server <- function(id) {
+overview2_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
-
+        
+        df_over <- shiny::reactive({
+            shiny::req(inFile <- input$target_load)
+            if (is.null(inFile)) { return(NULL) }
+            readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";")
+        })
+        
         # Slider UI rendering --------------------------------------------------
         ## Slider date
         output$plot_date <- shiny::renderUI({
-            shiny::req(exists("df_over"))
-            dates <- format(as.Date(sort(unique(df_over$date))), "%d %b %y")
+            shiny::req(df_over())
+            dates <- format(as.Date(sort(unique(df_over()$date))), "%d %b %y")
             shinyWidgets::sliderTextInput(
                 inputId = session$ns("plot_date"),
                 label = shiny::h5("Select date range"),
                 choices = dates,
                 selected = c(dates[1], dates[length(dates)]),
-                # from_max = dates[length(dates) - 1],
                 grid = FALSE
             )
-        }) %>%
-            shiny::bindCache(input$date)
+        })
         
         f_df <- shiny::reactive({
-            shiny::req(input$plot_date, length(input$plot_date) == 2, exists("df_over"))
+            shiny::req(input$plot_date, length(input$plot_date) == 2)
             format_date_min <- input$plot_date[[1]] %>% as.Date("%d %b %y")
             format_date_max <- input$plot_date[[2]] %>% as.Date("%d %b %y")
             
@@ -137,20 +152,20 @@ overview_module_server <- function(id) {
                 format_date_max <- format_date_max + 7
             }
             
-            df_over %>%
+            df_over() %>%
                 dplyr::filter(date <= format_date_max & date >= format_date_min)
         })
         
         ## Region picker
         output$region <- shiny::renderUI({
-            shiny::req(exists("df_over"))
+            shiny::req(df_over())
             shinyWidgets::pickerInput(
                 inputId = session$ns("region"),
                 label = NULL,
                 choices = list(
-                    "Left Plot" = c("Spain", df_over$acom_name %>% unique()),
+                    "Left Plot" = c("Spain", df_over()$acom_name %>% unique()),
                     "Right Plot" = stringr::str_c(c(
-                        "Spain", df_over$acom_name %>% unique()
+                        "Spain", df_over()$acom_name %>% unique()
                     ), " ")
                 ),
                 multiple = TRUE,
@@ -161,9 +176,9 @@ overview_module_server <- function(id) {
                 )
             )
         })
-
+        
         output$var_annot <- shiny::renderUI({
-            shiny::req(exists("df_over"))
+            shiny::req(df_over())
             if (exists("mt")) {
                 otp <- c(
                     "Pango lineages" = "pangolin_lineage",
@@ -215,11 +230,11 @@ overview_module_server <- function(id) {
                     forcats::fct_infreq() %>% 
                     levels()
             }
-        }) %>%
-            shiny::bindCache(input$var_annot, input$mutation_positions, f_df())
-
+        }) 
+        
         ## Annotation picker
         output$option_clades <- shiny::renderUI({
+            shiny::req(df_over())
             shinyWidgets::pickerInput(
                 inputId = session$ns("variant"),
                 label = shiny::h5("Pick Variant / Mutation:"),
@@ -229,9 +244,10 @@ overview_module_server <- function(id) {
                 options = list(`live-search` = TRUE)
             )
         })
-
+        
         ## Mutation position picker
         output$mutation_positions <- shiny::renderUI({
+            shiny::req(df_over())
             shiny::req(input$var_annot == "mutation")
             shinyWidgets::pickerInput(
                 inputId = session$ns("mutation_positions"),
@@ -242,7 +258,7 @@ overview_module_server <- function(id) {
                 options = list(`live-search` = TRUE)
             )
         })
-
+        
         ## Pangolin variant information
         file <- "https://raw.github.com/cov-lineages/pango-designation/master/lineage_notes.txt"
         annot <- file %>%
@@ -256,13 +272,13 @@ overview_module_server <- function(id) {
                 ),
                 Description = stringr::str_c(Description, " *")
             )
-
+        
         output$info <- shiny::renderUI({
             shiny::req(input$variant, input$var_annot == "pangolin_lineage")
-
+            
             var_description <- dplyr::filter(annot, Lineage == input$variant) %>%
                 dplyr::pull(Description)
-
+            
             shiny::div(
                 shiny::h5(
                     var_description,
@@ -283,10 +299,10 @@ overview_module_server <- function(id) {
                         style = "color: darkgray; text-align: justify; text-justify: inter-word;"
                     )
                 )
-
+                
             )
         })
-
+        
         # Dynamic titles  ------------------------------------------------------
         output$title_1_1 <- shiny::renderText({
             annot <- dplyr::case_when(
@@ -297,11 +313,11 @@ overview_module_server <- function(id) {
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {input$region[[1]]}")
         })
-
+        
         output$title_1_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
-
+        
         output$title_2_1 <- shiny::renderText({
             annot <- dplyr::case_when(
                 input$var_annot == "NCClade" ~ "Nextclade variants",
@@ -311,27 +327,27 @@ overview_module_server <- function(id) {
             )
             glue::glue("Average weekly {annot} {input$stack_p1} in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
-
+        
         output$title_2_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
-
+        
         output$title_3_1 <- shiny::renderText({
             glue::glue("Average weekly {input$variant} prevalence in {input$region[[1]]}")
         })
-
+        
         output$title_3_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
-
+        
         output$title_4_1 <- shiny::renderText({
             glue::glue("Average weekly {input$variant} prevalence in {stringr::str_remove_all(input$region[[2]], ' $' )}")
         })
-
+        
         output$title_4_2 <- shiny::renderText({
             glue::glue("Based on reported sample collection date")
         })
-
+        
         # Plots ----------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
@@ -350,9 +366,8 @@ overview_module_server <- function(id) {
                     plot_vairants(type = "bar", var = input$stack_p1)
             }
             pp
-        }) %>%
-            shiny::bindCache(input$region, input$var_annot, input$stack_p1, input$mutation_positions, f_df())
-
+        }) 
+        
         ## Plot 2
         output$plot_2 <- plotly::renderPlotly({
             shiny::req(f_df(), input$var_annot, input$stack_p1, input$region)
@@ -373,9 +388,8 @@ overview_module_server <- function(id) {
                     plot_vairants(type = "bar", var = input$stack_p1)
             }
             pp
-        }) %>%
-            shiny::bindCache(input$region, input$var_annot, input$stack_p1, input$mutation_positions, f_df())
-
+        }) 
+        
         ## Plot 3
         output$plot_3 <- plotly::renderPlotly({
             shiny::req(f_df(), input$var_annot, input$region, input$variant)
@@ -404,13 +418,12 @@ overview_module_server <- function(id) {
                 }
             }
             pp
-        }) %>%
-            shiny::bindCache(input$var_annot, input$region, input$variant, f_df())
-
+        })
+        
         ## Plot 4
         output$plot_4 <- plotly::renderPlotly({
             shiny::req(f_df(), input$var_annot, input$region, input$variant)
-
+            
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 pp <- mt %>%
@@ -436,8 +449,7 @@ overview_module_server <- function(id) {
                 }
             }
             pp
-        }) %>%
-            shiny::bindCache(input$var_annot, input$region, input$variant, input$mutation_positions, f_df())
+        }) 
     })
 }
 
