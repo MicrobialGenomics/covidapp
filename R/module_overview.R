@@ -42,18 +42,7 @@ overview_module_ui <- function(id) {
                     style = "align: right; float: right"
                 )
             ),
-            shinyWidgets::pickerInput(
-                inputId = ns("var_annot"),
-                label = NULL,
-                choices = c(
-                    "Pango lineages" = "pangolin_lineage",
-                    "GISAID clades" = "GISAID_clade",
-                    "Nextclade" = "NCClade",
-                    "World Health Organization" = "who", 
-                    "Mutation" = "mutation"
-                ), 
-                selected = "pangolin_lineage"
-            ),
+            shiny::uiOutput(outputId = ns("var_annot")),
             shiny::uiOutput(outputId = ns("mutation_positions")),
             shiny::uiOutput(outputId = ns("option_clades")),
             shiny::uiOutput(outputId = ns("info")), 
@@ -173,6 +162,33 @@ overview_module_server <- function(id) {
             )
         })
 
+        output$var_annot <- shiny::renderUI({
+            shiny::req(exists("df_over"))
+            if (exists("mt")) {
+                otp <- c(
+                    "Pango lineages" = "pangolin_lineage",
+                    "GISAID clades" = "GISAID_clade",
+                    "Nextclade" = "NCClade",
+                    "World Health Organization" = "who",
+                    "Mutation" = "mutation"
+                )
+            } else {
+                otp <- c(
+                    "Pango lineages" = "pangolin_lineage",
+                    "GISAID clades" = "GISAID_clade",
+                    "Nextclade" = "NCClade",
+                    "World Health Organization" = "who"
+                )
+            }
+            
+            shinyWidgets::pickerInput(
+                inputId = session$ns("var_annot"),
+                label = NULL,
+                choices = otp, 
+                selected = "pangolin_lineage"
+            )
+        })
+        
         ## Annotation options
         clades <- shiny::reactive({
             if (input$var_annot == "NCClade") {
@@ -319,7 +335,7 @@ overview_module_server <- function(id) {
         # Plots ----------------------------------------------------------------
         ## Plot 1
         output$plot_1 <- plotly::renderPlotly({
-            shiny::req(f_df(), input$region, input$var_annot, input$stack_p1, exists("mt"))
+            shiny::req(f_df(), input$region, input$var_annot, input$stack_p1)
             if (input$var_annot == "mutation") {
                 shiny::req(input$mutation_positions)
                 pp <- mt %>%

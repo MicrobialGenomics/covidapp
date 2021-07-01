@@ -6,31 +6,13 @@ df_map <<- readr::read_rds("data/map_data.rds")
 
 # Load overview module data -----------------------------------------------
 df_over <<- df_map$dat %>%
-    dplyr::mutate(
-        acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya"),
-        who = dplyr::case_when(
-            stringr::str_detect(NCClade, "Alpha") ~ "Alpha", 
-            stringr::str_detect(NCClade, "Beta") ~ "Beta",
-            stringr::str_detect(NCClade, "Gamma") ~ "Gamma",
-            stringr::str_detect(NCClade, "Delta") ~ "Delta",
-            stringr::str_detect(NCClade, "Epsilon") ~ "Epsilon",
-            stringr::str_detect(NCClade, "20B") ~ "Zeta",
-            stringr::str_detect(NCClade, "Eta") ~ "Eta",
-            stringr::str_detect(NCClade, "21E") ~ "Theta",
-            stringr::str_detect(NCClade, "Iota") ~ "Iota",
-            stringr::str_detect(NCClade, "Kappa") ~ "Kappa",
-            stringr::str_detect(NCClade, "20D") ~ "Lambda",
-            TRUE ~ "other"
-        ) 
-    ) %>% 
-    dplyr::filter(!acom_name == "Spain")
+    dplyr::mutate(acom_name = stringr::str_replace_all(acom_name, "Cataluña", "Catalunya")) 
 
-mt <<- readr::read_rds("data/MutationEmbeddedData.rds")
-mt_pos <<- extract_mutations(mt)
+# mt <<- readr::read_rds("data/MutationEmbeddedData.rds")
+# mt_pos <<- extract_mutations(mt)
 
 # Load per C.A module data ------------------------------------------------
 df_ca <<- df_over
-
 com_aut <- df_ca %>%
     dplyr::pull(acom_name) %>%
     unique() %>%
