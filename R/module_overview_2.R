@@ -11,10 +11,10 @@ overview2_module_ui <- function(id) {
             width = 3,
             
             ## Upload data
-            shiny::fileInput(
+           shiny::fileInput(
                 inputId = ns("target_load"),
                 label = shiny::h5("Choose csv"),
-                accept = c(".csv", ".txt", ".zip"),
+                accept = c(".csv", ".txt", ".zip", ".tar.gz", ".tar"),
                 placeholder = "No file selected",
                 buttonLabel = "Browse...",
                 width = 400
@@ -123,10 +123,33 @@ overview2_module_ui <- function(id) {
 overview2_module_server <- function(id) {
     shiny::moduleServer(id, function(input, output, session) {
         
+        shiny::showModal(
+            shiny::modalDialog(
+                modaldiag,
+                title = shiny::h4(
+                    "MyData CovidTag", 
+                    align = "center",
+                    style = "font-weight: bold; font-style: italic;"
+                ),
+                footer = NULL, 
+                easyClose = TRUE,
+                size = "l"
+            )
+        )
+        
         df_over <- shiny::reactive({
             shiny::req(inFile <- input$target_load)
             if (is.null(inFile)) { return(NULL) }
-            readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";")
+            dat <- readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";") %>% 
+                dplyr::mutate(
+                    collection_date = as.Date(collection_date, format = "%Y-%m-%d"),
+                    date = format(collection_date, "%y-%W"),
+                    week = as.numeric(stringr::str_remove(date, ".*-")),
+                    week_num = week,
+                    year = as.numeric(stringr::str_remove(date, "-.*")),
+                    date = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+                )
+            dat
         })
         
         # Slider UI rendering --------------------------------------------------
@@ -199,7 +222,7 @@ overview2_module_server <- function(id) {
             shinyWidgets::pickerInput(
                 inputId = session$ns("var_annot"),
                 label = NULL,
-                choices = otp, 
+                choices = otp[otp %in% names(df_over())], 
                 selected = "pangolin_lineage"
             )
         })
@@ -540,5 +563,62 @@ popup_variant_description <- shiny::fluidPage(
     )
 )
 
-
+modaldiag <-  shiny::fluidPage(
+    shiny::fluidRow(
+        shiny::h5(
+            "Please upload your data through the Browse button. 
+                            The file must be separated by semicolons and weigh 
+                            less than 1 Mb, in case of greater weight please 
+                            upload a compressed version of the file (.zip, .tar 
+                            or .tar.gz). This file should contain the following 
+                            columns:",
+            style = "margin-left: 10px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            " 1.-  acom_name: Name of the region from which the 
+                            samples are collected",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            " 2.-  collection_date: Date of collection of the 
+                            sample with the format year/month/day (2021/04/25)",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            "And at least one of the following columns:",
+            style = "margin-left: 10px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    
+    shiny::fluidRow(
+        shiny::h5(
+            " 3.-  NCClade: Nextclade variant annotation",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            " 4.-  pangolin_lineage: Pango annotation",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            " 5.-  GISAID_clade: Annotation in GISAID format",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    ),
+    shiny::fluidRow(
+        shiny::h5(
+            " 6.-  who: World Healt Organization variant annotation",
+            style = "margin-left: 100px; line-height: 25px; text-align: justify;"
+        )
+    )
+)
 
