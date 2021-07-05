@@ -16,7 +16,7 @@ ui <- function() {
                     "Enabled by data from",
                     style = "font-size: 14px; color: white",
                     href = "https://www.gisaid.org",
-                    target = "_black",
+                    target = "_blank",
                     shiny::img(
                         src = "images/gisaid_2.png",
                         height = 20,
@@ -32,7 +32,7 @@ ui <- function() {
                     ),
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/github_2.png",
                             height = 20,
@@ -42,7 +42,7 @@ ui <- function() {
                     ),
                     shiny::a(
                         href = "https://twitter.com/MicrobialGene",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,
@@ -144,7 +144,7 @@ ui_2 <- function() {
                 shiny::fixedRow(
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/github_2.png",
                             height = 20,
@@ -154,7 +154,7 @@ ui_2 <- function() {
                     ),
                     shiny::a(
                         href = "https://twitter.com/MicrobialGene",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,
