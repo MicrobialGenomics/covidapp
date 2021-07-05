@@ -23,8 +23,14 @@ ui <- function() {
                         width = 50
                     )
                 ),
-
+                
                 shiny::fixedRow(
+                    shiny::a(
+                        "Plot my data",
+                        style = "font-size: 14px; color: white",
+                        href = "https://covidtag.paseq.org:1989",
+                        target = "_black",
+                    ),
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
                         target = "_black",
@@ -114,9 +120,11 @@ server <- function() {
 
         ## Module tab 3
         per_ca_module_server("tab3")
-
+        
         ## Module tab 4
         acknowledgements_module_server("tab4")
+        
+        
     }
 }
 
