@@ -28,8 +28,7 @@ ui <- function() {
                     shiny::a(
                         "Plot my data",
                         style = "font-size: 14px; color: white",
-                        href = "https://covidtag.paseq.org:1989",
-                        target = "_black",
+                        href = "https://covidtag.paseq.org:1989"
                     ),
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
