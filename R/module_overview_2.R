@@ -186,13 +186,18 @@ overview2_module_server <- function(id) {
                 inputId = session$ns("region"),
                 label = NULL,
                 choices = list(
-                    "Left Plot" = c("Spain", df_over()$acom_name %>% unique()),
+                    "Left Plot" = c("All", df_over()$acom_name %>% unique()),
                     "Right Plot" = stringr::str_c(c(
-                        "Spain", df_over()$acom_name %>% unique()
+                        "All", df_over()$acom_name %>% unique()
                     ), " ")
                 ),
                 multiple = TRUE,
-                selected = c("Spain", "Catalunya "),
+                selected = c(
+                    "All", 
+                    stringr::str_c(c(
+                        "All", df_over()$acom_name %>% unique()
+                    ), " ")[2]
+                ),
                 options =  list(
                     "max-options-group" = 1,
                     `live-search` = TRUE
@@ -425,7 +430,7 @@ overview2_module_server <- function(id) {
                         mut = input$variant
                     )
             } else {
-                if (input$region[[1]] == "Spain") {
+                if (input$region[[1]] == "All") {
                     pp <- f_df() %>%
                         plot_variant_line(
                             variant = input$variant,
@@ -456,7 +461,7 @@ overview2_module_server <- function(id) {
                         mut = input$variant
                     )
             } else {
-                if (stringr::str_remove_all(input$region[[2]], ' $' ) == "Spain") {
+                if (stringr::str_remove_all(input$region[[2]], ' $' ) == "All") {
                     pp <- f_df() %>%
                         plot_variant_line(
                             variant = input$variant,
