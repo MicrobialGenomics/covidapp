@@ -89,7 +89,11 @@ map_module_server <- function(id) {
         ## Printing data version
         output$ver <- shiny::renderText({
             list.files("data", pattern = "MergedData_spain_") %>%
-                stringr::str_remove_all(".*n_|.rds")
+                tibble::as_tibble() %>%
+                dplyr::mutate(value = stringr::str_remove_all(value, ".*n_|.rds")) %>% 
+                dplyr::arrange(dplyr::desc(value)) %>% 
+                dplyr::slice_head(n = 1) %>% 
+                dplyr::pull(value)
         })
 
         ## Slider date

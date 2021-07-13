@@ -172,6 +172,7 @@ overview_module_server <- function(id) {
                     "World Health Organization" = "who",
                     "Mutation" = "mutation"
                 )
+                otp <- otp[otp %in% c(names(df_over), "mutation")]
             } else {
                 otp <- c(
                     "Pango lineages" = "pangolin_lineage",
@@ -179,6 +180,7 @@ overview_module_server <- function(id) {
                     "Nextclade" = "NCClade",
                     "World Health Organization" = "who"
                 )
+                otp <- otp[otp %in% names(df_over)]
             }
             
             shinyWidgets::pickerInput(
