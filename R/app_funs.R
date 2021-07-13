@@ -5,13 +5,16 @@ ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
             title = shiny::div(
-                shiny::img(
-                    src = "images/covidTag.png",
-                    height = 80,
-                    width = 80,
-                    style = "margin:-50px 5px"
+                shiny::tags$a(
+                    href = "http://covidtag.paseq.org",
+                    target = "_blank",
+                    shiny::img(
+                        src = "images/covidTag.png",
+                        height = 80,
+                        width = 80,
+                        style = "margin:-50px 5px"
+                    )
                 ),
-
                 shiny::a(
                     "Enabled by data from",
                     style = "font-size: 14px; color: white",
@@ -134,13 +137,16 @@ ui_2 <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
             title = shiny::div(
-                shiny::img(
-                    src = "images/covidTag.png",
-                    height = 80,
-                    width = 80,
-                    style = "margin:-50px 5px"
+                shiny::tags$a(
+                    href = "http://covidtag.paseq.org",
+                    target = "_blank",
+                    shiny::img(
+                        src = "images/covidTag.png",
+                        height = 80,
+                        width = 80,
+                        style = "margin:-50px 5px"
+                    )
                 ),
-                
                 shiny::fixedRow(
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",

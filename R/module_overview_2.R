@@ -11,10 +11,32 @@ overview2_module_ui <- function(id) {
             width = 3,
             
             ## Upload data
-           shiny::fileInput(
+            shiny::h5(
+                "Choose csv    (",
+                shiny::a(
+                    shiny::downloadLink(
+                        outputId = 'downloadData', 
+                        label = 'Download example file', 
+                        style = "color: darkgray;"
+                    )
+                ), 
+                ")",
+                shiny::div(
+                    shinyWidgets::dropdownButton(
+                        modaldiag,
+                        label = NULL,
+                        size = "xs",
+                        width = "1000px",
+                        status = "warning",
+                        icon = shiny::icon("question")
+                    ),
+                    style = "align: right; float: right"
+                )
+            ),
+            shiny::fileInput(
                 inputId = ns("target_load"),
-                label = shiny::h5("Choose csv"),
-                accept = c(".csv", ".txt", ".zip", ".tar.gz", ".tar"),
+                label = NULL,
+                accept = c(".csv", ".txt", ".zip", ".tar.gz", ".tar", ".xls", ".xlsx"),
                 placeholder = "No file selected",
                 buttonLabel = "Browse...",
                 width = 400
@@ -24,7 +46,7 @@ overview2_module_ui <- function(id) {
                 "Region for left and right plots",
                 shiny::div(
                     shinyWidgets::dropdownButton(
-                        popup_help_text,
+                        popup_help_text_2,
                         label = NULL,
                         size = "xs",
                         width = "1000px",
@@ -43,7 +65,7 @@ overview2_module_ui <- function(id) {
                 "Pick Variant Annotation:  ",
                 shiny::div(
                     shinyWidgets::dropdownButton(
-                        popup_variant_description,
+                        popup_variant_description_2,
                         label = NULL,
                         size = "xs",
                         width = "1000px",
@@ -126,29 +148,51 @@ overview2_module_server <- function(id) {
         shiny::showModal(
             shiny::modalDialog(
                 modaldiag,
-                title = shiny::h4(
-                    "MyData CovidTag", 
-                    align = "center",
-                    style = "font-weight: bold; font-style: italic;"
-                ),
+                title = NULL,
                 footer = NULL, 
                 easyClose = TRUE,
                 size = "l"
             )
         )
         
+        output$downloadData <- shiny::downloadHandler(
+            filename = function() { "test_data.csv" },
+            content = function(file) {
+                readr::write_delim(
+                    x = covidapp::example_data, 
+                    file = file, 
+                    delim = ";"
+                )
+            }
+        )
+        
+        
         df_over <- shiny::reactive({
             shiny::req(inFile <- input$target_load)
             if (is.null(inFile)) { return(NULL) }
-            dat <- readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";") %>% 
-                dplyr::mutate(
-                    collection_date = as.Date(collection_date, format = "%Y-%m-%d"),
-                    date = format(collection_date, "%y-%W"),
-                    week = as.numeric(stringr::str_remove(date, ".*-")),
-                    week_num = week,
-                    year = as.numeric(stringr::str_remove(date, "-.*")),
-                    date = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
-                )
+            if (stringr::str_detect(inFile$datapath, "[.]csv|[.]txt")) {
+                dat <- readr::read_delim(inFile$datapath, col_names = TRUE, delim = ";") %>% 
+                    dplyr::mutate(
+                        collection_date = as.Date(collection_date, format = "%Y-%m-%d"),
+                        date = format(collection_date, "%y-%W"),
+                        week = as.numeric(stringr::str_remove(date, ".*-")),
+                        week_num = week,
+                        year = as.numeric(stringr::str_remove(date, "-.*")),
+                        date = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+                    )
+            }
+            
+            if (stringr::str_detect(inFile$datapath, "[.]xls|[.]xlsx")) {
+                dat <- readxl::read_excel(inFile$datapath) %>% 
+                    dplyr::mutate(
+                        collection_date = as.Date(collection_date, format = "%Y-%m-%d"),
+                        date = format(collection_date, "%y-%W"),
+                        week = as.numeric(stringr::str_remove(date, ".*-")),
+                        week_num = week,
+                        year = as.numeric(stringr::str_remove(date, "-.*")),
+                        date = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
+                    )
+            }
             dat
         })
         
@@ -265,7 +309,7 @@ overview2_module_server <- function(id) {
             shiny::req(df_over())
             shinyWidgets::pickerInput(
                 inputId = session$ns("variant"),
-                label = shiny::h5("Pick Variant / Mutation:"),
+                label = shiny::h5("Pick Variant:"),
                 choices = clades(),
                 selected = "B.1.1.7",
                 multiple = FALSE,
@@ -481,7 +525,7 @@ overview2_module_server <- function(id) {
     })
 }
 
-popup_help_text <- shiny::fluidPage(
+popup_help_text_2 <- shiny::fluidPage(
     shiny::fixedRow(
         shiny::h3("Overview",
                   align = "center",
@@ -490,14 +534,13 @@ popup_help_text <- shiny::fluidPage(
             shiny::h5(
                 "This section allows a comparative exploration of the
                         evolution of the different variants of SARS-CoV-2 (CoV-19)
-                        between autonomous communities. Specifically, the graphs
+                        between regions. Specifically, the graphs
                         at the top give a more general view showing the total
                         number of sequences or the frequency (stack or fill
-                        option respectively) of each variant/mutation over time
+                        option respectively) of each variant over time
                         in intervals of weeks. On the other hand, the bottom
                         graphs show the evolution of the frequency of a single
-                        variant/mutation selected using the “Pick
-                        Variant/Mutation” panel.",
+                        variant selected using the “Pick Variant” panel.",
                 style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
             )
         ),
@@ -516,22 +559,9 @@ popup_help_text <- shiny::fluidPage(
                 style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
             ),
             shiny::h5(
-                "• The charts used are based on the sample collection date,
-                        and sequencing or GISAID submission date. As a result,
-                        this date may differ from when the sample was processed
-                        and sequenced, and when the data is released to the public.",
-                style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
-            ),
-            shiny::h5(
                 "• In relation with the last consideration, last data
                         pints often has incomplete data and may change as more
                         sequences come in.",
-                style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
-            ),
-            shiny::h5(
-                "•	The mutations that define SARS-CoV-2 (CoV-19) lineages
-                        are updated every few days. Therefore, displayed data is
-                        susceptible to change over time.",
                 style = "margin-left: 100px; margin-right: 50px; line-height: 25px; text-align: justify;"
             )
         ),
@@ -539,29 +569,27 @@ popup_help_text <- shiny::fluidPage(
     )
 )
 
-popup_variant_description <- shiny::fluidPage(
+popup_variant_description_2 <- shiny::fluidPage(
     shiny::fixedRow(
         shiny::h3("Variant Classification",
                   align = "center",
                   style = "font-weight: bold; font-style: italic;"),
         shiny::fixedRow(
             shiny::h5(
-                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are 
-                classified into groups according their similarity in terms of 
-                mutations or groups of mutations. The three classification systems
-                used in CovidTag are the clades designed by GISAID, NextClade and 
-                Pangolin. For instance, the variant of interest 'VUI202012/01' 
-                first identified in the United Kindom in December 2020, is 
-                designated by GISAID as clade 'GRY', as 501Y.V1 by NextClade 
-                and as B.1.1.7 by Pango lineages.",
+                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are
+                classified into groups according their similarity in terms of
+                mutations or groups of mutations. In myData CovidTag you can use 
+                four classification systems including the clades designed by 
+                GISAID, NextClade, Pangolin and the World Health Organization 
+                (WHO). For instance, the variant of interest 'VUI202012/01'
+                first identified in the United Kindom in December 2020, is
+                designated by GISAID as clade 'GRY', as 501Y.V1 by NextClade
+                , as B.1.1.7 by Pango lineages and as 'Alpha' by WHO annotation.",
                 style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
             ),
             shiny::h5(
                 "You can select any of the variants using the drop-down menu for
-                a brief description and a link to access complete information. 
-                You can also select the “Mutation” option to choose a single 
-                mutation and display how and when this mutation has appeared in 
-                genomic sequences over time.",
+                a brief description and a link to access complete information.",
                 style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
             )
         )
@@ -570,6 +598,10 @@ popup_variant_description <- shiny::fluidPage(
 
 modaldiag <-  shiny::fluidPage(
     shiny::fluidRow(
+        shiny::h3("MyData Overview",
+                  align = "center",
+                  style = "font-weight: bold; font-style: italic;"),
+        shiny::hr(),
         shiny::h5(
             "Please upload your data through the Browse button. 
                             The file must be separated by semicolons and weigh 
