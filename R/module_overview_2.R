@@ -15,7 +15,7 @@ overview2_module_ui <- function(id) {
                 "Choose csv    (",
                 shiny::a(
                     shiny::downloadLink(
-                        outputId = ns('downloadData'), 
+                        outputId = ns("downloadData"), 
                         label = 'Download example file', 
                         style = "color: darkgray;"
                     )
@@ -159,7 +159,7 @@ overview2_module_server <- function(id) {
             filename = function() { "test_data.csv" },
             content = function(file) {
                 readr::write_delim(
-                    x = covidapp::example_data, 
+                    x = example_data, 
                     file = file, 
                     delim = ";"
                 )
