@@ -15,7 +15,7 @@ overview2_module_ui <- function(id) {
                 "Choose csv    (",
                 shiny::a(
                     shiny::downloadLink(
-                        outputId = 'downloadData', 
+                        outputId = ns('downloadData'), 
                         label = 'Download example file', 
                         style = "color: darkgray;"
                     )
@@ -165,7 +165,6 @@ overview2_module_server <- function(id) {
                 )
             }
         )
-        
         
         df_over <- shiny::reactive({
             shiny::req(inFile <- input$target_load)
