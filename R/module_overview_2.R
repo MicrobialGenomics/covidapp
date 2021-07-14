@@ -158,7 +158,7 @@ overview2_module_server <- function(id) {
         output$downloadData <- shiny::downloadHandler(
             filename = function() { "test_data.csv" },
             content = function(file) {
-                system.file("extdata/example_data.csv.zip", package = "covidapp") %>% 
+                "data/example_data.csv.zip" %>% 
                     readr::read_delim(delim = ";") %>% 
                     readr::write_delim(file = file, delim = ";")
             }
