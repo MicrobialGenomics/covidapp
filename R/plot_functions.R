@@ -25,7 +25,7 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
             clade = forcats::fct_infreq(!!sym(var_anno)) %>% forcats::fct_rev()
         )
 
-    if (ca != "Spain") { df <- df %>% dplyr::filter(acom_name == ca) }
+    if (!ca %in% c("Spain", "All")) { df <- df %>% dplyr::filter(acom_name == ca) }
 
     df %>%
         tidyr::drop_na(week_num) %>%
@@ -307,7 +307,7 @@ prepro_mutations <- function(df, ca = "Spain") {
         ) %>%
         tidyr::unite(mutation, c(aaSubstitutions, aaDeletions), sep = ",", remove = TRUE)
 
-    if (ca != "Spain") { pre <- pre %>% dplyr::filter(acom_name == ca) }
+    if (!ca %in% c("Spain", "All")) { pre <- pre %>% dplyr::filter(acom_name == ca) }
 
     pre %>%
         dplyr::pull(week_num) %>%

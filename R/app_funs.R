@@ -5,29 +5,37 @@ ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
             title = shiny::div(
-                shiny::img(
-                    src = "images/covidTag.png",
-                    height = 80,
-                    width = 80,
-                    style = "margin:-50px 5px"
+                shiny::tags$a(
+                    href = "http://covidtag.paseq.org",
+                    target = "_blank",
+                    shiny::img(
+                        src = "images/covidTag.png",
+                        height = 80,
+                        width = 80,
+                        style = "margin:-50px 5px"
+                    )
                 ),
-
                 shiny::a(
                     "Enabled by data from",
                     style = "font-size: 14px; color: white",
                     href = "https://www.gisaid.org",
-                    target = "_black",
+                    target = "_blank",
                     shiny::img(
                         src = "images/gisaid_2.png",
                         height = 20,
                         width = 50
                     )
                 ),
-
+                
                 shiny::fixedRow(
                     shiny::a(
+                        "Plot my data",
+                        style = "font-size: 14px; color: white",
+                        href = "http://covidtag.paseq.org:1989"
+                    ),
+                    shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/github_2.png",
                             height = 20,
@@ -37,7 +45,7 @@ ui <- function() {
                     ),
                     shiny::a(
                         href = "https://twitter.com/MicrobialGene",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,
@@ -114,9 +122,11 @@ server <- function() {
 
         ## Module tab 3
         per_ca_module_server("tab3")
-
+        
         ## Module tab 4
         acknowledgements_module_server("tab4")
+        
+        
     }
 }
 
@@ -127,17 +137,20 @@ ui_2 <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
             title = shiny::div(
-                shiny::img(
-                    src = "images/covidTag.png",
-                    height = 80,
-                    width = 80,
-                    style = "margin:-50px 5px"
+                shiny::tags$a(
+                    href = "http://covidtag.paseq.org",
+                    target = "_blank",
+                    shiny::img(
+                        src = "images/covidTag.png",
+                        height = 80,
+                        width = 80,
+                        style = "margin:-50px 5px"
+                    )
                 ),
-                
                 shiny::fixedRow(
                     shiny::a(
                         href = "https://github.com/MicrobialGenomics/covidapp",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/github_2.png",
                             height = 20,
@@ -147,7 +160,7 @@ ui_2 <- function() {
                     ),
                     shiny::a(
                         href = "https://twitter.com/MicrobialGene",
-                        target = "_black",
+                        target = "_blank",
                         shiny::img(
                             src = "images/twitter2.png",
                             height = 20,

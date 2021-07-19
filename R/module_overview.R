@@ -172,6 +172,7 @@ overview_module_server <- function(id) {
                     "World Health Organization" = "who",
                     "Mutation" = "mutation"
                 )
+                otp <- otp[otp %in% c(names(df_over), "mutation")]
             } else {
                 otp <- c(
                     "Pango lineages" = "pangolin_lineage",
@@ -179,6 +180,7 @@ overview_module_server <- function(id) {
                     "Nextclade" = "NCClade",
                     "World Health Organization" = "who"
                 )
+                otp <- otp[otp %in% names(df_over)]
             }
             
             shinyWidgets::pickerInput(
@@ -506,16 +508,17 @@ popup_variant_description <- shiny::fluidPage(
                   style = "font-weight: bold; font-style: italic;"),
         shiny::fixedRow(
             shiny::h5(
-                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are 
-                classified into groups according their similarity in terms of 
-                mutations or groups of mutations. The three classification systems
-                used in CovidTag are the clades designed by GISAID, NextClade and 
-                Pangolin. For instance, the variant of interest 'VUI202012/01' 
-                first identified in the United Kindom in December 2020, is 
-                designated by GISAID as clade 'GRY', as 501Y.V1 by NextClade 
-                and as B.1.1.7 by Pango lineages.",
+                "SARS-CoV-2 (hCoV-19) genome sequences obtained from samples are
+                classified into groups according their similarity in terms of
+                mutations or groups of mutations. The four classification systems
+                used in CovidTag are the clades designed by GISAID, NextClade,
+                Pangolin and the World Health Organization (WHO). For instance,
+                the variant of interest 'VUI202012/01'
+                first identified in the United Kindom in December 2020, is
+                designated by GISAID as clade 'GRY', as 501Y.V1 by NextClade
+                , as B.1.1.7 by Pango lineages and as 'Alpha' by WHO annotation.",
                 style = "margin-left: 50px; margin-right: 50px; line-height: 25px; text-align: justify;"
-            ),
+            ), 
             shiny::h5(
                 "You can select any of the variants using the drop-down menu for
                 a brief description and a link to access complete information. 
