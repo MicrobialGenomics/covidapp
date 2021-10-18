@@ -91,11 +91,11 @@ footer <- shiny::div(
                 )
             ),
             shiny::column(
-                width = 3,
+                width = 2,
                 align = "center",
                 shiny::h4("Share", style = "font-weight: bold; font-style: italic;"),
-                shiny::br(),
                 shiny::fixedRow(
+                    shiny::br(),
                     shiny::tags$a(
                         href = "",
                         target="_blank",
@@ -130,9 +130,29 @@ footer <- shiny::div(
                     )
                 ),
             ),
+            shiny::column(
+                width = 2,
+                align = "center",
+                shiny::h4("Supported by", style = "font-weight: bold; font-style: italic;"),
+                shiny::br(),
+                shiny::fluidRow(shiny::column(
+                    width = 12,
+                    align = "center",
+                    shiny::tags$a(
+                        href = "https://www.ccma.cat/tv3/marato/",
+                        target="_blank",
+                        shiny::img(
+                            src = "images/marato.svg",
+                            height = '40px',
+                            width = '200px',
+                            style = "opacity: 0.6;"
+                        )
+                    )
+                ))
+            ),
             ## Affiliation
             shiny::column(
-                width = 3,
+                width = 2,
                 align = "center",
                 shiny::h4("Affiliations", style = "font-weight: bold; font-style: italic;"),
                 shiny::br(),
@@ -176,6 +196,11 @@ footer <- shiny::div(
                 href = "mailto:covidseq@irsicaixa.es?",
                 target = "_blank"
             ),
+            align = "center",
+            style = "color: darkgray;"
+        ),
+        shiny::h6(
+            "Amb el suport de la Fundació La Marató de TV3 (Projecte 202126-30-21)",
             align = "center",
             style = "color: darkgray;"
         ),
