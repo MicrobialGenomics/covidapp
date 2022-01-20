@@ -1,4 +1,4 @@
-FROM rocker/geospatial:4.1.2
+FROM rocker/geospatial
 
 # Copy covidseq_dev and set permission
 ADD ./covidapp /srv/shiny-server
