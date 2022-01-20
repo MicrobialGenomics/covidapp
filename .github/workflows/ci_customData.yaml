@@ -4,23 +4,11 @@ on:
   push:
     branches:
       - dev
-  pull_request:
-    types: [closed]
-  release:
-    types: [published]
 
 jobs:
   docker_push:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout covidapp main breanch
-        uses: actions/checkout@v2
-        if: ${{ github.event_name == 'release' || github.event.pull_request.merged == true }}
-        with:
-          repository: MicrobialGenomics/covidapp
-          ref: main
-          path: covidapp
-          
       - name: Checkout covidapp dev breanch
         uses: actions/checkout@v2
         if: ${{ github.event_name == 'push' }}
@@ -52,27 +40,3 @@ jobs:
           no-cache: true
           tags: |
             microbialgenomics/covidtag_customdata:dev
-
-      - name: Build and push main breanch
-        uses: docker/build-push-action@v2
-        if: ${{ github.event.pull_request.merged == true }}
-        with:
-          context: .
-          file: ./covidapp/Dockerfile_customData
-          platforms: linux/386, linux/amd64
-          push: true
-          no-cache: true
-          tags: |
-            microbialgenomics/covidtag_customdata:main
-
-      - name: Build and push release
-        uses: docker/build-push-action@v2
-        if: ${{ github.event_name == 'release' }}
-        with:
-          context: .
-          file: ./covidapp/Dockerfile_customData
-          platforms: linux/386, linux/amd64
-          push: true
-          no-cache: true
-          tags: |
-            microbialgenomics/covidtag_customdata:latest
