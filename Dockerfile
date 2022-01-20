@@ -1,7 +1,7 @@
-FROM rocker/geospatial
+FROM microbialgenomics/shiny-geospatial:4.1.2
 
 # Copy covidseq_dev and set permission
-RUN mkdir -p /srv/shiny-server && rm -rf /srv/shiny-server/*
+RUN rm -rf /srv/shiny-server/*
 ADD ./covidapp /srv/shiny-server
 RUN chmod -R +r /srv/shiny-server
 RUN rm /srv/shiny-server/app_customData.R
