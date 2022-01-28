@@ -14,7 +14,7 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
             dplyr::mutate(clade = forcats::fct_infreq(!!sym(var_anno))) %>%
             dplyr::pull(clade) %>% 
             levels() %>% 
-            .[. %in% c(.[1:11], "B.1.1.7", "P.1", "B.A.2", "B.1.351", "B.1.617.2")] %>% 
+            .[. %in% c(.[1:11], "B.1.1.7", "P.1", "BA.2", "B.1.351", "B.1.617.2")] %>% 
             unique()
 
         df <- df %>% dplyr::mutate(!!sym(var_anno) := dplyr::if_else(!!sym(var_anno) %in% to_retain, !!sym(var_anno), "Other"))
