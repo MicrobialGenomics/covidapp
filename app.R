@@ -12,103 +12,10 @@ mt <<- readr::read_rds("data/MutationEmbeddedData.rds")
 mt_pos <<- extract_mutations(mt)
 
 # Load per C.A module data ------------------------------------------------
-df_ca <<- df_over
-com_aut <- df_ca %>%
-    dplyr::pull(acom_name) %>%
-    unique() %>%
-    sort() %>%
-    c("Spain", .)
-
-all_plots <- list()
-for (com in com_aut) {
-    
-    if("pangolin_lineage" %in% names(df_ca)) {
-        all_plots[["counts"]][["pangolin_lineage"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "pangolin_lineage") %>%
-            plot_vairants(
-                type = "bar",
-                var = "counts",
-                pal_dir = -1,
-                pal = "mg"
-            )
-        
-        all_plots[["freq"]][["pangolin_lineage"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "pangolin_lineage") %>%
-            plot_vairants(
-                type = "bar",
-                var = "freq",
-                pal_dir = -1,
-                pal = "mg"
-            )
-    }
-  
-    if("NCClade" %in% names(df_ca)) {
-        all_plots[["counts"]][["NCClade"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "NCClade") %>%
-            plot_vairants(
-                type = "bar",
-                var = "counts",
-                pal_dir = -1,
-                pal = "mg"
-            )
-        
-        all_plots[["freq"]][["NCClade"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "NCClade") %>%
-            plot_vairants(
-                type = "bar",
-                var = "freq",
-                pal_dir = -1,
-                pal = "mg"
-            )
-    }
-    
-    if("GISAID_clade" %in% names(df_ca)) {
-        all_plots[["counts"]][["GISAID_clade"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "GISAID_clade") %>%
-            plot_vairants(
-                type = "bar",
-                var = "counts",
-                pal_dir = -1,
-                pal = "mg"
-            )
-        
-        all_plots[["freq"]][["GISAID_clade"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "GISAID_clade") %>%
-            plot_vairants(
-                type = "bar",
-                var = "freq",
-                pal_dir = -1,
-                pal = "mg"
-            )
-    }
-    
-    if("who" %in% names(df_ca)) {
-        all_plots[["counts"]][["who"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "who") %>%
-            plot_vairants(
-                type = "bar",
-                var = "counts",
-                pal_dir = -1,
-                pal = "mg"
-            )
-        
-        all_plots[["freq"]][["who"]][[com]] <- df_ca %>%
-            prepro_variants(ca = com, var_anno = "who") %>%
-            plot_vairants(
-                type = "bar",
-                var = "freq",
-                pal_dir = -1,
-                pal = "mg"
-            )
-    }
-    all_plots
-}
-
-all_plots <<- all_plots
+all_plots <<-  readr::read_rds("data/all_plots.rds")
 
 # covidTag initialization -------------------------------------------------
 shiny::shinyApp(ui = covidapp::ui(), server = covidapp::server())
-
 
 
 
