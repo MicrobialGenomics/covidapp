@@ -14,7 +14,7 @@ mt_pos <<- extract_mutations(mt)
 # Load per C.A module data ------------------------------------------------
 all_plots <<-  readr::read_rds("data/all_plots.rds")
 
-dev.off()
+# dev.off()
 # covidTag initialization -------------------------------------------------
 shiny::shinyApp(ui = covidapp::ui(), server = covidapp::server())
 
