@@ -12,6 +12,7 @@ mt <<- readr::read_rds("data/MutationEmbeddedData.rds")
 mt_pos <<- extract_mutations(mt)
 
 # Load per C.A module data ------------------------------------------------
+df_ca <<- df_over
 all_plots <<-  readr::read_rds("data/all_plots.rds")
 
 # dev.off()
