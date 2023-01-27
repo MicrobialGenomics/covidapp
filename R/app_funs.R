@@ -4,6 +4,7 @@
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
+            shiny::tags$head(shiny::includeHTML("google-analytics.html")),
             title = shiny::div(
                 shiny::tags$a(
                     href = "http://covidtag.paseq.org",
