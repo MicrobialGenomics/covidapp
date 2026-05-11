@@ -121,8 +121,8 @@ map_module_server <- function(id) {
             }
 
             df_map$dat %>%
-                dplyr::filter(date <= format_date_max &
-                                  date >= format_date_min)
+                dplyr::filter(as.Date(date) <= format_date_max &
+                                  as.Date(date) >= format_date_min)
         })
 
         ## Base map
@@ -156,7 +156,7 @@ map_module_server <- function(id) {
             }
 
             map <- df_map$bs_map$base_map
-            p <- map$acom_name %>%
+            p <- map$acom_name[-7] %>%
                 purrr::set_names() %>%
                 purrr::map(function(x) {
                     if (x == "Territorio no asociado a ninguna autonomía") {
