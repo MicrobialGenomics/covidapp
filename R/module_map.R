@@ -156,7 +156,7 @@ map_module_server <- function(id) {
             }
 
             map <- df_map$bs_map$base_map
-            p <- map$acom_name %>%
+            p <- map$acom_name[-7] %>%
                 purrr::set_names() %>%
                 purrr::map(function(x) {
                     if (x == "Territorio no asociado a ninguna autonomía") {
