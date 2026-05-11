@@ -6,7 +6,7 @@
 data_dw_module_ui <- function(id) {
   ns <- shiny::NS(id)
   shiny::pageWithSidebar(
-    headerPanel = shiny::headerPanel(""),
+    headerPanel = shiny::div(class = "col-sm-12", shiny::h1("")),
 
     sidebarPanel = NULL,
     # main
@@ -54,6 +54,4 @@ data_dw_module_server <- function(id) {
 
   })
 }
-
-
 

@@ -5,7 +5,7 @@
 per_ca_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
-        headerPanel = shiny::headerPanel(""),
+        headerPanel = shiny::div(class = "col-sm-12", shiny::h1("")),
         sidebarPanel = shiny::sidebarPanel(
             width = 3,
             shiny::h5(
@@ -114,4 +114,3 @@ per_ca_module_server <- function(id) {
         })
     })
 }
-

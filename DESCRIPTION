@@ -25,7 +25,6 @@ Imports:
     shinyjs,
     shinythemes,
     leaflet,
-    rgdal,
     rlang (>= 0.1.2),
     magrittr,
     shinyWidgets,
