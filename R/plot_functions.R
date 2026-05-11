@@ -216,7 +216,7 @@ plot_variant_by_com <- function(df, variant, var_col) {
     pp <- prepro %>%
         dplyr::rename("C.A" = "acom_name") %>%
         ggplot(aes(week_num, freq, colour = C.A, group = C.A, text = text)) +
-        stat_smooth(se = F, method = "gam", formula = y ~ s(x), size = 0.8, alpha = 0.5, geom = "line", lty = 5) +
+        stat_smooth(se = F, method = "gam", formula = y ~ s(x), linewidth = 0.8, alpha = 0.5, geom = "line", lty = 5) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.3, shape = 21) +
         scale_colour_manual(values = pals::polychrome() %>% as.vector(), name = "") +
         scale_y_continuous(labels = scales::percent, limits = c(0, 1.05), breaks = seq(0, 1, by = 0.25)) +
@@ -264,7 +264,7 @@ plot_variant_line <- function(df, mt, variant, var_col) {
 
     pp <- prepro %>%
         ggplot(aes(week_num, freq, colour = varcol, fill = varcol)) +
-        stat_smooth(method = "gam", formula = y ~ s(x), size = 0.8, alpha = 0.5, lty = 0) +
+        stat_smooth(method = "gam", formula = y ~ s(x), linewidth = 0.8, alpha = 0.5, lty = 0) +
         geom_point(data = . %>% dplyr::filter(!freq == 0), alpha = 0.8, shape = 21) +
         scale_y_continuous(labels = scales::percent) + # , breaks = seq(0, 1, by = 0.25)
         scale_fill_manual(values = "#FEE08B") +
@@ -571,7 +571,13 @@ empty_plot <- function(msg = "No data for this region") {
     pp <- tibble::tibble(x = 1, y = 1, text = msg) %>%
         ggplot(aes(x, y, label = text)) +
         geom_text() +
-        theme_void()
+        theme_minimal(base_family = "sans") +
+        theme(
+            axis.title = element_blank(),
+            axis.text = element_blank(),
+            panel.grid = element_blank(),
+            text = element_text(family = "sans")
+        )
 
     plotly::ggplotly(pp) %>%
         plotly::config(displaylogo = FALSE)
