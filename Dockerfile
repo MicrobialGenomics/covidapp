@@ -6,6 +6,14 @@ ADD ./covidapp /srv/shiny-server
 RUN chmod -R +r /srv/shiny-server
 RUN rm /srv/shiny-server/app_customData.R
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libuv1 \
+    libuv1-dev \
+    cmake \
+    make \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install deps and package
 RUN R -e "devtools::install_deps('/srv/shiny-server')"
 RUN R -e "devtools::install('/srv/shiny-server')"
