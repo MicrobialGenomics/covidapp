@@ -121,8 +121,8 @@ map_module_server <- function(id) {
             }
 
             df_map$dat %>%
-                dplyr::filter(date <= format_date_max &
-                                  date >= format_date_min)
+                dplyr::filter(as.Date(date) <= format_date_max &
+                                  as.Date(date) >= format_date_min)
         })
 
         ## Base map
