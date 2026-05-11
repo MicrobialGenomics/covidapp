@@ -1,4 +1,4 @@
-FROM microbialgenomics/shiny-geospatial:4.1.2
+FROM --platform=linux/amd64 microbialgenomics/shiny-geospatial:4.1.2
 
 # Copy covidseq_dev and set permission
 RUN rm -rf /srv/shiny-server/*
