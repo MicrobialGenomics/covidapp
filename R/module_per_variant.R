@@ -8,7 +8,7 @@
 per_variant_module_ui <- function(id) {
     ns <- shiny::NS(id)
     shiny::pageWithSidebar(
-        headerPanel = shiny::div(class = "col-sm-12", shiny::h1("")),
+        headerPanel = shiny::headerPanel(""),
 
         # sidebar
         sidebarPanel = shiny::sidebarPanel(
@@ -95,3 +95,4 @@ per_variant_module_server <- function(id) {
             shiny::bindCache(input$variant)
     })
 }
+

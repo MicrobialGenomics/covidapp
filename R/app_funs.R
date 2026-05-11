@@ -1,54 +1,10 @@
-#' SEO metadata shared by CovidTag entry points.
-covidtag_seo_head <- function() {
-    title <- "CovidTag | SARS-CoV-2 variant surveillance in Spain"
-    description <- paste(
-        "CovidTag is an interactive dashboard for SARS-CoV-2 genomic",
-        "surveillance in Spain, tracking variants, mutations and sequencing",
-        "efforts using GISAID data."
-    )
-    url <- "https://covidtag.paseq.org/"
-    image <- "https://covidtag.paseq.org/images/covidTag.png"
-
-    shiny::tags$head(
-        shiny::includeHTML("google-analytics.html"),
-        shiny::tags$meta(name = "description", content = description),
-        shiny::tags$link(rel = "canonical", href = url),
-        shiny::tags$meta(name = "robots", content = "index, follow"),
-        shiny::tags$meta(property = "og:type", content = "website"),
-        shiny::tags$meta(property = "og:title", content = title),
-        shiny::tags$meta(property = "og:description", content = description),
-        shiny::tags$meta(property = "og:url", content = url),
-        shiny::tags$meta(property = "og:image", content = image),
-        shiny::tags$meta(name = "twitter:card", content = "summary"),
-        shiny::tags$meta(name = "twitter:title", content = title),
-        shiny::tags$meta(name = "twitter:description", content = description),
-        shiny::tags$meta(name = "twitter:image", content = image),
-        shiny::tags$script(
-            type = "application/ld+json",
-            shiny::HTML('{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "CovidTag",
-  "url": "https://covidtag.paseq.org/",
-  "description": "CovidTag is an interactive dashboard for SARS-CoV-2 genomic surveillance in Spain, tracking variants, mutations and sequencing efforts using GISAID data.",
-  "applicationCategory": "HealthApplication",
-  "operatingSystem": "Web",
-  "image": "https://covidtag.paseq.org/images/covidTag.png",
-  "publisher": {
-    "@type": "Organization",
-    "name": "PASEQ"
-  }
-}')
-        )
-    )
-}
-
 #' Title
 #'
 #' @export
 ui <- function() {
     shiny::shinyUI(
         shiny::navbarPage(
+            shiny::tags$head(shiny::includeHTML("google-analytics.html")),
             title = shiny::div(
                 shiny::tags$a(
                     href = "http://covidtag.paseq.org",
@@ -104,15 +60,6 @@ ui <- function() {
             theme = shinythemes::shinytheme("flatly"),
             fluid = TRUE,
             collapsible = TRUE,
-            windowTitle = "CovidTag | SARS-CoV-2 variant surveillance in Spain",
-            header = shiny::tagList(
-                covidtag_seo_head(),
-                shiny::tags$head(shiny::tags$style('
-                       nav .container:first-child {
-                           margin-left:100px; width: 100%;
-                       }')),
-                shinyjs::useShinyjs()
-            ),
 
             # TAB1: Overview
             shiny::tabPanel(
@@ -149,7 +96,12 @@ ui <- function() {
                 shiny::br(),
                 shiny::br(),
                 footer
-            )
+            ),
+            shiny::tags$head(shiny::tags$style('
+                       nav .container:first-child {
+                           margin-left:100px; width: 100%;
+                       }')),
+            shinyjs::useShinyjs()
         )
     )
 }
@@ -160,7 +112,7 @@ ui <- function() {
 server <- function() {
     function(input, output, session) {
 
-        shinyjs::runjs('document.title = "CovidTag | SARS-CoV-2 variant surveillance in Spain"')
+        shinyjs::runjs('document.title = "CovidTag"')
         shinylogs::track_usage(storage_mode = shinylogs::store_rds("logs/"))
 
         ## Module tab 1
@@ -223,15 +175,6 @@ ui_2 <- function() {
             theme = shinythemes::shinytheme("flatly"),
             fluid = TRUE,
             collapsible = TRUE,
-            windowTitle = "CovidTag | SARS-CoV-2 variant surveillance in Spain",
-            header = shiny::tagList(
-                covidtag_seo_head(),
-                shiny::tags$head(shiny::tags$style('
-                       nav .container:first-child {
-                           margin-left:100px; width: 100%;
-                       }')),
-                shinyjs::useShinyjs()
-            ),
             
             # TAB2: Overview
             shiny::tabPanel(
@@ -241,7 +184,13 @@ ui_2 <- function() {
                 shiny::br(),
                 shiny::br(),
                 footer
-            )
+            ),
+            
+            shiny::tags$head(shiny::tags$style('
+                       nav .container:first-child {
+                           margin-left:100px; width: 100%;
+                       }')),
+            shinyjs::useShinyjs()
         )
     )
 }
@@ -252,7 +201,7 @@ ui_2 <- function() {
 server_2 <- function() {
     function(input, output, session) {
         
-        shinyjs::runjs('document.title = "CovidTag | SARS-CoV-2 variant surveillance in Spain"')
+        shinyjs::runjs('document.title = "CovidTag"')
         shinylogs::track_usage(storage_mode = shinylogs::store_rds("logs/"))
         
         ## Module tab 1
