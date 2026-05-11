@@ -171,7 +171,7 @@ map_module_server <- function(id) {
                                 text = "No data for this region on selected dates"
                             ) %>%
                                 ggplot(aes(x, y, label = text)) +
-                                theme_void(base_family = 20) +
+                                theme_void(base_size = 20) +
                                 geom_text()
 
                         } else {
