@@ -38,13 +38,13 @@ prepro_variants <- function(df, ca = "Spain", var_anno = "NCClade") {
         dplyr::group_by(week_num, .drop = FALSE) %>%
         dplyr::select(week_num, clade) %>%
         dplyr::count(clade, .drop = FALSE) %>%
-        dplyr::summarise(
+        dplyr::mutate(
             freq = n / sum(n),
             pct = freq * 100,
             counts = n,
-            sum = sum(counts),
-            clade = clade
-        )
+            sum = sum(counts)
+        ) %>% 
+        dplyr::ungroup()
 }
 
 #' Plot variants
@@ -201,14 +201,14 @@ plot_variant_by_com <- function(df, variant, var_col) {
         ) %>%
         dplyr::group_by(week_num, acom_name) %>%
         dplyr::count(varcol, .drop = FALSE) %>%
-        dplyr::summarise(
+        dplyr::mutate(
             freq = n / sum(n),
             pct = freq * 100,
             counts = n,
             sum = sum(counts),
-            varcol = varcol,
-            acom_name = acom_name
+            varcol = varcol
         ) %>%
+        dplyr::ungroup() %>% 
         tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
         dplyr::filter(varcol == variant) %>%
         dplyr::mutate(text = stringr::str_c("C.A:", acom_name, "<br>Frequency:", pct, sep = " "))
@@ -252,13 +252,13 @@ plot_variant_line <- function(df, mt, variant, var_col) {
         ) %>%
         dplyr::group_by(week_num) %>%
         dplyr::count(varcol, .drop = FALSE) %>%
-        dplyr::summarise(
+        dplyr::mutate(
             freq = n / sum(n),
             pct = freq * 100,
             counts = n,
-            sum = sum(counts),
-            varcol = varcol
+            sum = sum(counts)
         ) %>%
+        dplyr::ungroup() %>% 
         tidyr::replace_na(replace = list(freq = 0, pct = 0)) %>%
         dplyr::filter(varcol == variant)
 
@@ -323,12 +323,13 @@ prepro_mutations <- function(df, ca = "Spain") {
                 dplyr::count(mutation, .drop = FALSE) %>%
                 dplyr::mutate(pos = stringr::str_sub(mutation, end = -2)) %>%
                 dplyr::group_by(pos) %>%
-                dplyr::summarise(week_num = as.Date(x),
-                                 freq = n / sum(n),
-                                 pct = freq * 100,
-                                 counts = n,
-                                 sum = sum(counts),
-                                 mutation = mutation) %>%
+                dplyr::mutate(
+                    week_num = as.Date(x),
+                    freq = n / sum(n),
+                    pct = freq * 100,
+                    counts = n,
+                    sum = sum(counts)
+                ) %>%
                 dplyr::ungroup()
         }) %>%
         dplyr::mutate(mutation = forcats::fct_infreq(mutation))
@@ -451,7 +452,7 @@ plot_mutations_2 <- function(inp_list,
             week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
         ) %>%
         dplyr::group_by(week_num) %>%
-        dplyr::summarise(
+        dplyr::mutate(
             mutation = name,
             counts = value,
             total = sum(value),
@@ -530,7 +531,7 @@ plot_mutation_line <- function(inp_list,
             week_num = lubridate::parse_date_time(paste0(year, "/", week, "/", 1), 'y/W/w')
         ) %>%
         dplyr::group_by(week_num) %>%
-        dplyr::summarise(
+        dplyr::mutate(
             mutation = name,
             counts = value,
             total = sum(value),
